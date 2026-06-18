@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwingJulep</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%232a7a60'/><circle cx='50' cy='50' r='50' fill='none' stroke='%2340c090' stroke-width='6'/><text x='50' y='66' text-anchor='middle' font-family='Georgia' font-weight='bold' font-size='38' fill='%23e8f8f0'>SJ</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* ── Base verts/turquoise ── */
+  --bg:#e8f4ef;--bg2:#d4ecE3;--bg3:#bde0d4;
+  --card:#f0faf5;--card2:#e2f4ec;
+  --nav:#1a3a30;--nav2:#2a5a48;
+  --text:#0d2a20;--text2:#2a5a48;--text3:#5a8a78;
+  --border:rgba(30,90,70,.18);--border2:rgba(30,90,70,.32);
+  --accent:#2a7a60;--accent2:#40c090;
+  --shadow:0 2px 8px rgba(10,50,35,.12);
+  --r:12px;--rs:8px;
+  /* Statuts — différenciés forme+couleur (WCAG AA) */
+  --s-yes:#1a5a30;--s-yes-bg:#b8e8c8;   /* vert foncé / vert pâle */
+  --s-maybe:#2a5a7a;--s-maybe-bg:#b0d8f0; /* bleu-turquoise */
+  --s-wait:#6a2a7a;--s-wait-bg:#ddb8f0;  /* violet */
+  --s-todo:#3a4a40;--s-todo-bg:#c0d4cc;  /* gris-vert neutre */
+  --s-no:#5a4a40;--s-no-bg:#c8c0b8;     /* taupe */
+  --s-past:#4a5a58;--s-past-bg:#b8c8c4; /* gris-bleu */
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0a1a12;--bg2:#0f2218;--bg3:#162e20;
+  --card:#122018;--card2:#1a2e22;
+  --nav:#050e08;--nav2:#0e1e14;
+  --text:#c8eed8;--text2:#5aab80;--text3:#388060;
+  --border:rgba(50,160,100,.18);--border2:rgba(50,160,100,.32);
+  --accent:#38c088;--accent2:#50e0a8;
+  --shadow:0 2px 12px rgba(0,0,0,.5);
+  --s-yes:#70d890;--s-yes-bg:#082810;  /* vert */
+  --s-maybe:#50b8e0;--s-maybe-bg:#081828; /* turquoise */
+  --s-wait:#b870e0;--s-wait-bg:#180828;   /* violet */
+  --s-todo:#88a898;--s-todo-bg:#102018;   /* gris-vert */
+  --s-no:#788870;--s-no-bg:#101808;       /* taupe */
+  --s-past:#688888;--s-past-bg:#0c1818;   /* gris-bleu */
+}}
+
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+/* NAV */
+.topbar{background:linear-gradient(160deg,var(--nav) 0%,#1a4a38 60%,var(--nav2) 100%);padding:1.25rem 1.5rem .75rem;text-align:center}
+.logo{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#e8f8f0;letter-spacing:-.01em}
+.nav{background:var(--nav2);position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-inner{display:flex;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none;padding:0 1rem}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-tab{padding:11px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex-shrink:0;transition:color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.nav-tab:hover{color:rgba(255,255,255,.9)}
+.nav-tab.active{color:#e8f8f0;border-bottom-color:var(--accent2)}
+
+/* ACTIVITY BANNER */
+.activity-bar{background:var(--nav);border-bottom:1px solid rgba(255,255,255,.06);height:32px;display:flex;align-items:center;transition:background .15s}
+.activity-bar:hover{background:rgba(0,0,0,.15)}
+.activity-inner{display:flex;align-items:center;width:100%}
+.activity-item{font-size:11px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:6px}
+.activity-dot{width:5px;height:5px;border-radius:50%;background:var(--accent2);flex-shrink:0}
+.activity-hist-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.activity-hist-item:last-child{border-bottom:none}
+
+/* SCREENS */
+.screen{display:none;max-width:1200px;margin:0 auto;padding:1.5rem 1.25rem 5rem}
+.screen.active{display:block}
+
+/* FESTIVALS GRID */
+.month-header{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.12em;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:1rem;grid-column:1/-1;margin-top:.5rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(40,30,10,.18)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.card-name{font-size:15px;font-weight:600;color:var(--text)}
+.card-date{font-size:12px;color:var(--text2);margin-top:3px}
+.card-city{font-size:12px;color:var(--text3);margin-top:2px}
+.card-price{font-size:12px;font-weight:600;color:var(--accent);background:var(--bg2);padding:2px 8px;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tag{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.pstrip{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.pchip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 4px;border-radius:20px;font-size:11px;font-weight:500;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.pav-sm{width:18px;height:18px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#f0e8d0;flex-shrink:0}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:3px 9px;border-radius:4px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;border-left:3px solid}
+.b-yes{background:var(--s-yes-bg);color:var(--s-yes);border-color:var(--s-yes)}
+.b-maybe{background:var(--s-maybe-bg);color:var(--s-maybe);border-color:var(--s-maybe)}
+.b-wait{background:var(--s-wait-bg);color:var(--s-wait);border-color:var(--s-wait)}
+.b-todo{background:var(--s-todo-bg);color:var(--s-todo);border-color:var(--s-todo)}
+.b-no{background:var(--s-no-bg);color:var(--s-no);border-color:var(--s-no)}
+.b-past{background:var(--s-past-bg);color:var(--s-past);border-color:var(--s-past)}
+
+/* DETAIL */
+.detail{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:30}
+.detail.open{display:block}
+.detail-hdr{position:sticky;top:0;background:var(--nav2);padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.1)}
+.back{background:rgba(255,255,255,.12);border:none;cursor:pointer;color:#fff;font-size:18px;padding:6px 10px;border-radius:var(--rs);font-family:inherit}
+.detail-title{font-size:15px;font-weight:600;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbtn{background:rgba(255,255,255,.12);border:none;border-radius:var(--rs);padding:6px 12px;cursor:pointer;color:#fff;font-size:12px;font-weight:500;font-family:inherit}
+.hbtn.del{background:rgba(180,40,40,.3)}
+.detail-body{padding:1.25rem;max-width:700px;margin:0 auto}
+.info-block{background:var(--card);border-radius:var(--r);padding:1rem;margin-bottom:1rem;border:1px solid var(--border)}
+.info-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;font-size:14px;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none;padding-bottom:0}
+.info-label{color:var(--text3);font-size:12px;min-width:70px;flex-shrink:0;padding-top:1px}
+.sec-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .6rem}
+.link-row{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 14px;font-size:14px;color:var(--text);cursor:pointer;width:100%;margin-bottom:8px;text-decoration:none;font-family:inherit}
+.link-row:hover{background:var(--bg3)}
+.link-row span{flex:1;text-align:left;font-weight:500}
+.notes-box{font-size:13px;color:var(--text2);line-height:1.7;background:var(--card2);border-radius:var(--rs);padding:.85rem 1rem;margin-bottom:1rem;border:1px solid var(--border)}
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px}
+.pav{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#f0e8d0;flex-shrink:0}
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px}
+.tc-top{display:flex;align-items:center;gap:10px}
+.tc-info{flex:1}
+.tc-title{font-size:13px;font-weight:600;color:var(--text)}
+.tc-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.tc-price{font-size:13px;font-weight:700;color:var(--accent)}
+.empty{font-size:13px;color:var(--text3);padding:.5rem 0}
+
+/* MAP */
+#map{width:100%;height:calc(100vh - 110px)}
+
+/* FORMS */
+.section-card{background:var(--card);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;border:1px solid var(--border);box-shadow:var(--shadow)}
+.section-card h3{font-size:14px;font-weight:600;margin-bottom:1rem;color:var(--text);display:flex;align-items:center;gap:8px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent)}
+.form-row textarea{min-height:70px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fest-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px;margin-bottom:8px}
+.fest-item-name{font-size:13px;font-weight:600;color:var(--text)}
+.fest-item-date{font-size:11px;color:var(--text3);margin-bottom:6px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mini-label{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;width:100%}
+.btn{padding:10px 20px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none;width:100%;margin-top:8px;transition:opacity .15s}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--nav2);color:#f0e8d0}
+.btn-secondary{background:none;border:1.5px solid var(--border2);color:var(--text2);margin-top:6px}
+.btn-danger{background:none;border:1.5px solid rgba(160,40,40,.5);color:#903030;margin-top:6px}
+.success{background:var(--s-yes-bg);color:var(--s-yes);border-radius:var(--rs);padding:10px 14px;font-size:13px;text-align:center;margin-top:8px;display:none}
+.profile-chip{padding:6px 14px;border-radius:4px;font-size:13px;font-weight:500;border:1.5px solid var(--border2);cursor:pointer;color:var(--text2);background:var(--bg);transition:all .15s;font-family:inherit}
+.profile-chip:hover,.profile-chip.active{background:var(--nav2);color:#f0e8d0;border-color:var(--nav2)}
+.style-checks{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.style-check{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;color:var(--text)}
+.style-check input{width:15px;height:15px;accent-color:var(--accent)}
+
+/* PARTICIPANTS 2-col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:768px){.two-col{display:flex;flex-direction:column}.two-col>div:last-child{order:-1}}
+
+/* PARTICIPANT ROW */
+.participant-entry{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.participant-hdr{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);cursor:pointer}
+.participant-hdr:hover{background:var(--card2)}
+.participant-body{display:none;padding:8px 12px;background:var(--bg2);border-top:1px solid var(--border)}
+.participant-body.open{display:block}
+.pfest-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;margin-bottom:4px;background:var(--card);border:.5px solid var(--border)}
+.pfest-name{flex:1;font-size:12px;color:var(--text);font-weight:500}
+
+/* IMPORT BOX */
+.import-box{background:rgba(143,188,69,.1);border:1.5px dashed rgba(143,188,69,.4);border-radius:var(--rs);padding:1rem;margin-bottom:1.25rem}
+.import-box-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.import-row{display:flex;gap:8px}
+.import-row input{flex:1;padding:8px 12px;border:1.5px solid var(--border2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.import-btn{background:var(--nav2);color:#f0e8d0;border:none;border-radius:var(--rs);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+.import-status{font-size:12px;color:var(--text3);margin-top:6px;display:none}
+
+/* DETAILS FORMS */
+details{margin-top:8px}
+details summary{font-size:13px;font-weight:500;color:var(--accent);cursor:pointer;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px}
+details summary::before{content:'＋';font-size:14px}
+details[open] summary::before{content:'－'}
+.detail-form{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-top:6px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:var(--r) var(--r) 0 0;padding:1.5rem 1.25rem 2.5rem;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;border:1px solid var(--border)}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:1rem;color:var(--text)}
+.modal-btns{display:flex;gap:8px;margin-top:1rem}
+.modal-btns button{flex:1;margin:0}
+
+/* ADMIN */
+.admin-overlay{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:40}
+.admin-overlay.open{display:block}
+.admin-inner{max-width:700px;margin:0 auto;padding:2rem 1.25rem 4rem}
+.admin-login{text-align:center;padding-top:4rem}
+.admin-content{display:none}
+.admin-content.open{display:block}
+
+/* FOOTER */
+footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);margin-top:2rem;position:relative;display:flex;align-items:center;justify-content:center}
+.footer-center{text-align:center}
+.footer-text{font-family:'Playfair Display',serif;font-size:13px;color:var(--text2);letter-spacing:.05em}
+.footer-admin{position:absolute;right:1rem;font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;font-family:inherit;opacity:.3}
+.footer-contact{margin-top:6px;font-size:12px;padding:5px 16px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;font-family:inherit}
+
+/* LOADING */
+.loading{text-align:center;padding:4rem 1rem;color:var(--text3)}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONTACT */
+.contact-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.contact-overlay.open{display:flex}
+
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .three-col{grid-template-columns:1fr}
+}
+
+/* MSG CARD */
+.msg-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:10px}
+.msg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.msg-name{font-size:14px;font-weight:600;color:var(--text)}
+.msg-date{font-size:11px;color:var(--text3)}
+.msg-text{font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="logo">SwingJulep</div></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-tab active" data-tab="festivals">Festivals</button>
+    <button class="nav-tab" data-tab="carte">🗺 Carte</button>
+    <button class="nav-tab" data-tab="participants">Participants</button>
+    <button class="nav-tab" data-tab="ajouter">+ Ajouter</button>
+  </div>
+</nav>
+
+<!-- ACTIVITY BANNER -->
+<div class="activity-bar" id="activity-bar" onclick="toggleActivityPanel()" style="cursor:pointer" title="Voir l'historique">
+  <div class="activity-inner" id="activity-inner" style="animation:none;padding:0 1.5rem">
+    <span class="activity-item"><span class="activity-dot"></span>Chargement...</span>
+    <span style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:1rem">▾</span>
+  </div>
+</div>
+
+<!-- ACTIVITY PANEL -->
+<div id="activity-panel" style="display:none;background:var(--nav);border-bottom:1px solid rgba(255,255,255,0.1);max-height:280px;overflow-y:auto">
+  <div style="max-width:800px;margin:0 auto;padding:.75rem 1.5rem">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem">Historique des modifications</div>
+    <div id="activity-list"></div>
+  </div>
+</div>
+
+<!-- FESTIVALS -->
+<div class="screen active" id="tab-festivals">
+  <div class="grid" id="festivals-grid">
+    <div class="loading"><div class="spinner"></div>Chargement...</div>
+  </div>
+</div>
+
+<!-- CARTE -->
+<div class="screen" id="tab-carte" style="padding:0">
+  <div id="map"></div>
+</div>
+
+<!-- PARTICIPANTS -->
+<div class="screen" id="tab-participants">
+  <div class="two-col">
+    <div id="profil-form-col"></div>
+    <div id="profil-list-col"></div>
+  </div>
+</div>
+
+<!-- AJOUTER -->
+<div class="screen" id="tab-ajouter">
+  <div style="max-width:600px;margin:0 auto" id="ajouter-content"></div>
+</div>
+
+<!-- GIF PARTICIPANTS -->
+<div id="gif-participants" style="display:none;text-align:center;padding:6rem 1.25rem 3rem;max-width:600px;margin:0 auto">
+  <img id="swing-gif" data-src="swing.gif" alt="Swing dancers" style="width:100%;border-radius:12px;opacity:0.85;border:1px solid var(--border)">
+  <div style="font-size:11px;color:var(--text3);margin-top:8px;letter-spacing:.05em">🎷 Swing on !</div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div class="detail" id="detail-view">
+  <div class="detail-hdr">
+    <button class="back" onclick="closeDetail()">←</button>
+    <span class="detail-title" id="detail-title"></span>
+    <div style="display:flex;gap:6px">
+      <button class="hbtn" id="detail-edit-btn">✏️ Modifier</button>
+      <button class="hbtn del" id="detail-del-btn">🗑️</button>
+    </div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-overlay" id="contact-overlay" onclick="if(event.target===this)closeContact()">
+  <div class="modal">
+    <h2>📬 Nous contacter</h2>
+    <div class="form-row"><label>Prénom</label><input type="text" id="c-nom" placeholder="Ex: Juju"></div>
+    <div class="form-row"><label>Message</label><textarea id="c-msg" style="min-height:100px" placeholder="Une question, une suggestion..."></textarea></div>
+    <div id="c-status" style="font-size:12px;color:var(--text3);margin-top:6px;display:none"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeContact()" style="margin:0">Annuler</button>
+      <button class="btn btn-primary" onclick="sendContact()" style="margin:0">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-inner">
+    <div class="admin-login" id="admin-login">
+      <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--text);margin-bottom:.5rem">🔐 Admin</div>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:2rem">Accès réservé</p>
+      <div style="max-width:280px;margin:0 auto">
+        <input type="password" id="admin-pwd" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')checkPwd()"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;outline:none;margin-bottom:10px;text-align:center;letter-spacing:.2em">
+        <button onclick="checkPwd()" class="btn btn-primary">Entrer</button>
+        <button onclick="closeAdmin()" class="btn btn-secondary" style="margin-top:8px">Annuler</button>
+        <div id="admin-err" style="color:#903030;font-size:12px;margin-top:8px;display:none">Mot de passe incorrect</div>
+      </div>
+    </div>
+    <div class="admin-content" id="admin-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text)">📬 Messages</div>
+        <button onclick="closeAdmin()" style="padding:8px 18px;border:1.5px solid var(--border2);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500">← Retour</button>
+      </div>
+      <div id="admin-msgs"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<footer id="site-footer">
+  <div class="footer-center">
+    <div class="footer-text">Made by Claude &amp; Julien</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">Né le 18 juin 2026 🎷</div>
+    <button class="footer-contact" onclick="openContact()">📬 Nous contacter</button>
+  </div>
+  <button class="footer-admin" onclick="openAdmin()" title="Admin">⚙</button>
+</footer>
+
+<script>
+// ─── SUPABASE ───────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(
+  'https://gtadmrkoirlpmvswzgpb.supabase.co',
+  'sb_publishable_OMHPBKwPmAxeDHOLv1d7Vw_7BqNYAvX',
+  {
+    global: {
+      headers: {
+        'Authorization': 'Bearer sb_publishable_OMHPBKwPmAxeDHOLv1d7Vw_7BqNYAvX'
+      }
+    }
+  }
+);
+
+// ─── CONSTANTS ──────────────────────────────────────────────
+const ADMIN_PWD = 'odin';
+
+const SL = {
+  'J\'y vais':'J\'y vais ✓',
+  'Peut-être':'Peut-être',
+  'En attente':'En attente',
+  'À décider':'À décider',
+  'Passé':'Passé',
+  'Non':'Non'
+};
+const SC = {
+  'J\'y vais':'b-yes','Peut-être':'b-maybe','En attente':'b-wait',
+  'À décider':'b-todo','Passé':'b-past','Non':'b-no'
+};
+const SD = {
+  'J\'y vais':'#2a5a2a','Peut-être':'#5a4a10','En attente':'#5a3010',
+  'À décider':'#3a3830','Passé':'#6a6050','Non':'#5a5050'
+};
+const STATUTS = ['J\'y vais','Peut-être','À décider','En attente','Non'];
+const STATUT_SELECT = STATUTS.map(s=>`<option value="${s}">${SL[s]||s}</option>`).join('');
+const HEBERGEMENT_SELECT = `<option value="?">—</option><option value="J'en ai un">J'en ai un</option><option value="J'en cherche un">J'en cherche un</option><option value="Non">Non</option>`;
+const TRANSPORT_SELECT = `<option value="?">—</option><option value="J'en ai un">J'en ai un</option><option value="J'en cherche un">J'en cherche un</option><option value="Non">Non</option>`;
+const MI = {train:'🚄',avion:'✈️',voiture:'🚗',covoiturage:'👥',bus:'🚌',autre:'🛣️'};
+
+// ─── STATE ──────────────────────────────────────────────────
+let festivals = [], participants = [], participations = [], trajets = [], hebergements = [], activites = [];
+let currentFestId = null;
+let map = null, mapMarkers = [];
+
+// ─── HELPERS ────────────────────────────────────────────────
+const ini = n => n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+const fd = (d1,d2) => {
+  const o={day:'numeric',month:'short'};
+  const a=new Date(d1+'T12:00:00').toLocaleDateString('fr-FR',o);
+  if(!d2||d1===d2) return a;
+  return a+' – '+new Date(d2+'T12:00:00').toLocaleDateString('fr-FR',o);
+};
+const fmy = d => new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+const byMonth = arr => arr.reduce((m,f)=>{const k=fmy(f.date_debut);(m[k]=m[k]||[]).push(f);return m},{});
+const festParticipants = fid => {
+  const pids = participations.filter(p=>p.festival_id===fid&&p.statut!=='Non').map(p=>p.participant_id);
+  return participants.filter(p=>pids.includes(p.id));
+};
+const festParticipation = (pid,fid) => participations.find(p=>p.participant_id===pid&&p.festival_id===fid);
+
+// ─── LOAD DATA ──────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [f,p,pp,t,h,a] = await Promise.all([
+      sb.from('festivals').select('*').order('date_debut'),
+      sb.from('participants').select('*').order('nom'),
+      sb.from('participations').select('*'),
+      sb.from('trajets').select('*').order('created_at',{ascending:false}),
+      sb.from('hebergements').select('*').order('created_at',{ascending:false}),
+      sb.from('activite').select('*').order('created_at',{ascending:false}).limit(20)
+    ]);
+    if(f.error) {
+      console.warn('Supabase error:', f.error.message || f.error.code || 'unknown');
+      // Try to continue anyway
+    }
+    if(f.data) festivals = f.data;
+    if(p.data) participants = p.data;
+    if(pp.data) participations = pp.data;
+    if(t.data) trajets = t.data;
+    if(h.data) hebergements = h.data;
+    if(a.data) activites = a.data;
+  } catch(e) {
+    const msg = (e && e.message) ? String(e.message) : 'Erreur inconnue';
+    console.error('Supabase error:', msg);
+    const grid = document.getElementById('festivals-grid');
+    if(grid) grid.innerHTML = '<div style="padding:2rem;color:var(--text2);font-size:14px">⚠️ Erreur de connexion à la base de données.<br><br><small style="color:var(--text3)">' + msg + '</small><br><br><button onclick="loadAll()" style="margin-top:1rem;padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit">🔄 Réessayer</button></div>';
+    return;
+  }
+  renderAll();
+}
+
+const HUMOUR = {
+  festival: [
+    "🎷 Un nouveau festival débarque dans le calendrier !",
+    "✨ La piste de danse s'agrandit !",
+    "📅 Nouvelle date à bloquer dans l'agenda !",
+    "🎉 Quelqu'un a encore trouvé un festival… on est pas sortis du plancher !",
+  ],
+  participant: [
+    "💃 Un·e nouveau·elle danseur·se rejoint la bande !",
+    "🕺 La troupe s'agrandit !",
+    "👋 Bienvenue dans le chaos organisé !",
+  ],
+  participation: [
+    "🎟️ Quelqu'un met à jour ses plans… ou ses excuses !",
+    "📝 Les plans changent, les grooves restent !",
+    "🗓️ Le planning se précise — ou pas !",
+  ],
+  trajet: [
+    "🚄 Quelqu'un prépare ses bagages !",
+    "✈️ En route pour la piste de danse !",
+    "🚗 Le covoiturage c'est plus fun que le taxi !",
+  ],
+  hebergement: [
+    "🛏️ Un toit pour danser et récupérer !",
+    "🏠 L'hébergement c'est 50% du festival !",
+  ],
+  absence: [
+    "😢 Quelqu'un ne viendra pas… mais on l'aime quand même !",
+    "🪑 Une chaise de libre sur la piste !",
+    "😭 La tristesse est proportionnelle au niveau de swing !",
+  ],
+  default: [
+    "🎵 Quelque chose a changé sur SwingJulep !",
+    "🔄 Mise à jour en cours !",
+  ]
+};
+
+function funMsg(type) {
+  const arr = HUMOUR[type] || HUMOUR.default;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function logActivity(type, description) {
+  await sb.from('activite').insert({type, description});
+}
+
+// ─── RENDER ALL ─────────────────────────────────────────────
+function renderAll() {
+  renderFestivals();
+  renderParticipants();
+  renderAjouter();
+  renderActivity();
+  if(map) renderMapMarkers();
+}
+
+// ─── ACTIVITY BANNER ────────────────────────────────────────
+function renderActivity() {
+  const bar = document.getElementById('activity-inner');
+  const list = document.getElementById('activity-list');
+  
+  if(!activites.length){
+    bar.innerHTML='<span class="activity-item"><span class="activity-dot"></span>Bienvenue sur SwingJulep ! <span style="color:rgba(255,255,255,.3);margin-left:.5rem">▾</span></span>';
+    if(list) list.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.4)">Aucune activité pour l\'instant.</p>';
+    return;
+  }
+  
+  // Show only latest in banner
+  const latest = activites[0];
+  const timeAgo = formatTimeAgo(latest.created_at);
+  bar.innerHTML=`<span class="activity-item"><span class="activity-dot"></span>${latest.description}<span style="color:rgba(255,255,255,.3);margin-left:.75rem">▾</span></span>`;
+  
+  // Build history panel
+  if(list) list.innerHTML = activites.map(a=>`
+    <div class="activity-hist-item">
+      <span class="activity-dot"></span>
+      <span style="font-size:12px;color:rgba(255,255,255,.65);flex:1">${a.description}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.25);flex-shrink:0;margin-left:1rem">${formatTimeAgo(a.created_at)}</span>
+    </div>`).join('');
+}
+
+function formatTimeAgo(dateStr) {
+  const diff = (Date.now() - new Date(dateStr)) / 1000;
+  if(diff < 60) return 'à l\'instant';
+  if(diff < 3600) return Math.floor(diff/60)+'min';
+  if(diff < 86400) return Math.floor(diff/3600)+'h';
+  if(diff < 604800) return Math.floor(diff/86400)+'j';
+  return new Date(dateStr).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+}
+
+function toggleActivityPanel() {
+  const panel = document.getElementById('activity-panel');
+  const bar = document.getElementById('activity-bar');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  bar.style.background = isOpen ? '' : 'rgba(0,0,0,.2)';
+}
+
+// ─── FESTIVALS ──────────────────────────────────────────────
+function renderFestivals() {
+  const grid = document.getElementById('festivals-grid');
+  if(!festivals.length){ grid.innerHTML='<p style="color:var(--text3);padding:2rem">Aucun festival pour l\'instant.</p>'; return; }
+  const grouped = byMonth(festivals);
+  grid.innerHTML = Object.entries(grouped).map(([m,fests])=>`
+    <div class="month-header">${m}</div>
+    ${fests.map(f=>{
+      const ps = festParticipants(f.id);
+      const styles = (f.styles||[]);
+      const isSwitch = styles.includes('Switch') || (f.nom+' '+(f.notes||'')).toLowerCase().includes('switch');
+      const isQueer = styles.includes('Queer') || (f.nom+' '+(f.notes||'')).toLowerCase().includes('queer');
+      return `<div class="card" onclick="openDetail('${f.id}')">
+        <div class="card-top">
+          <div>
+            <div class="card-name">${f.nom}</div>
+            <div class="card-date">${fd(f.date_debut,f.date_fin)}</div>
+            <div class="card-city">📍 ${f.ville||''}</div>
+          </div>
+          ${f.prix?`<div class="card-price">dès ${f.prix}€</div>`:''}
+        </div>
+        <div class="tags">
+          ${styles.map(s=>`<span class="tag" style="${s==='Queer'||s==='Switch'?'font-weight:700;border-color:var(--accent)':''}">${s}</span>`).join('')}
+          ${isQueer&&!styles.includes('Queer')?'<span class="tag" style="font-weight:700;border-color:var(--accent)">Queer</span>':''}
+          ${isSwitch&&!styles.includes('Switch')?'<span class="tag" style="font-weight:700;border-color:var(--accent)">Switch</span>':''}
+        </div>
+        ${ps.length?`<div class="pstrip">${ps.map(p=>`<div class="pchip"><div class="pav-sm">${ini(p.nom)}</div>${p.nom}</div>`).join('')}</div>`:''}
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+// ─── MAP ────────────────────────────────────────────────────
+function initMap() {
+  if(map) return;
+  map = L.map('map').setView([47,8],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+  renderMapMarkers();
+}
+
+function renderMapMarkers() {
+  mapMarkers.forEach(m=>m.remove());
+  mapMarkers=[];
+  festivals.forEach(f=>{
+    if(!f.lat||!f.lng) return;
+    const color = SD[f.statut]||'#888';
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:30px;height:30px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer">★</div>`,
+      iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-18]
+    });
+    const ps = festParticipants(f.id);
+    const m = L.marker([f.lat,f.lng],{icon}).addTo(map);
+    m.bindPopup(`<div style="font-weight:600;font-size:13px;margin-bottom:4px">${f.nom}</div>
+      <div style="font-size:11px;color:#666;margin-bottom:6px">📅 ${fd(f.date_debut,f.date_fin)}<br>📍 ${f.ville||''}</div>
+      ${f.prix?`<div style="font-size:11px;margin-bottom:6px">🎟️ dès ${f.prix}€</div>`:''}
+      ${ps.length?`<div style="font-size:11px">👥 ${ps.map(p=>p.nom).join(', ')}</div>`:''}
+      <button onclick="document.getElementById('tab-carte').classList.remove('active');openDetail('${f.id}')" style="margin-top:8px;font-size:11px;padding:3px 10px;border-radius:20px;border:none;background:#8a6830;color:white;cursor:pointer">Voir la fiche →</button>`);
+    mapMarkers.push(m);
+  });
+}
+
+async function geocode(ville) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(ville)}&format=json&limit=1`,{headers:{'User-Agent':'SwingJulep/2.0'}});
+    const j = await r.json();
+    if(j[0]) return {lat:parseFloat(j[0].lat),lng:parseFloat(j[0].lon)};
+  } catch(e){}
+  return null;
+}
+
+// ─── DETAIL ─────────────────────────────────────────────────
+async function openDetail(fid) {
+  currentFestId = fid;
+  const f = festivals.find(x=>x.id===fid);
+  if(!f) return;
+  document.getElementById('detail-title').textContent = f.nom;
+  
+  const ps = participations.filter(p=>p.festival_id===fid&&p.statut!=='Non');
+  const psFull = ps.map(p=>{
+    const part = participants.find(x=>x.id===p.participant_id);
+    return {...p, nom:part?.nom||'?', ville:part?.ville||''};
+  });
+  const tj = trajets.filter(t=>t.festival_id===fid);
+  const hb = hebergements.filter(h=>h.festival_id===fid);
+
+  const psHtml = psFull.length ? `<div class="plist">${psFull.map(p=>`
+    <div class="prow">
+      <div class="pav">${ini(p.nom)}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--text)">${p.nom}</div>${p.ville?`<div style="font-size:11px;color:var(--text3)">📍 ${p.ville}</div>`:''}</div>
+      <span class="badge ${SC[p.statut]||'b-todo'}" style="margin:0">${SL[p.statut]||p.statut}</span>
+    </div>`).join('')}</div>` : '<p class="empty">Aucun participant</p>';
+
+  const tjHtml = tj.length ? tj.map(t=>`<div class="tcard"><div class="tc-top">
+    <span style="font-size:18px">${MI[t.mode]||'🛣️'}</span>
+    <div class="tc-info"><div class="tc-title">${t.depart} → ${t.arrivee}</div>
+    <div class="tc-meta">${t.date_trajet?fd(t.date_trajet,t.date_trajet):''} · ${t.mode}${t.auteur?' · par '+t.auteur:''}</div>
+    ${t.notes?`<div class="tc-meta">${t.notes}</div>`:''}</div>
+    ${t.prix?`<div class="tc-price">${t.prix}€</div>`:''}</div></div>`).join('') : '<p class="empty">Aucun trajet</p>';
+
+  const hbHtml = hb.length ? hb.map(h=>`<div class="tcard"><div class="tc-top">
+    <span style="font-size:18px">🛏️</span>
+    <div class="tc-info"><div class="tc-title">${h.adresse||h.type||'Hébergement'}</div>
+    <div class="tc-meta">${h.type||''}${h.places?' · '+h.places+' place(s)':''}${h.auteur?' · par '+h.auteur:''}</div>
+    ${h.notes?`<div class="tc-meta">${h.notes}</div>`:''}
+    ${h.lien?`<a href="${h.lien}" target="_blank" style="font-size:11px;color:var(--accent)">Voir ↗</a>`:''}</div>
+    ${h.prix_nuit?`<div class="tc-price">${h.prix_nuit}€/nuit</div>`:''}</div></div>`).join('') : '<p class="empty">Aucun hébergement</p>';
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="info-block">
+      <div class="info-row"><span class="info-label">📅 Dates</span><span>${fd(f.date_debut,f.date_fin)}</span></div>
+      <div class="info-row"><span class="info-label">📍 Lieu</span><span>${f.ville||'N/A'}</span></div>
+      ${f.prix?`<div class="info-row"><span class="info-label">🎟️ Prix</span><span>dès ${f.prix}€</span></div>`:''}
+      <div class="info-row"><span class="info-label">🎵 Styles</span><div class="tags" style="margin:0">${(f.styles||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div></div>
+    </div>
+    ${f.notes?`<div class="notes-box">${f.notes}</div>`:''}
+    ${f.lien?`<a class="link-row" href="${f.lien}" target="_blank"><span>🌐 Site officiel</span><span style="opacity:.6">↗</span></a>`:''}
+    <div class="sec-title">Participants (${psFull.length})</div>${psHtml}
+    <div class="sec-title">Trajets (${tj.length})</div>
+    ${tjHtml}
+    <details>
+      <summary>Ajouter un trajet</summary>
+      <div class="detail-form">
+        <div class="form-row"><label>Moyen</label><select id="dtj-m"><option value="train">Train</option><option value="avion">Avion</option><option value="voiture">Voiture</option><option value="covoiturage">Covoiturage</option><option value="bus">Bus</option><option value="autre">Autre</option></select></div>
+        <div class="form-grid">
+          <div class="form-row"><label>Départ</label><input id="dtj-d" placeholder="Toulouse"></div>
+          <div class="form-row"><label>Arrivée</label><input id="dtj-a" placeholder="${(f.ville||'').split(',')[0]}"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row"><label>Date</label><input type="date" id="dtj-dt" value="${f.date_debut}"></div>
+          <div class="form-row"><label>Prix (€)</label><input type="number" id="dtj-p" placeholder="0"></div>
+        </div>
+        <div class="form-row"><label>Ton prénom</label><input id="dtj-auteur" placeholder="Juju"></div>
+        <div class="form-row"><label>Notes</label><input id="dtj-n" placeholder="Ex: départ 8h45"></div>
+        <button class="btn btn-secondary" onclick="addTrajet('${f.id}')">+ Ajouter</button>
+      </div>
+    </details>
+    <div class="sec-title" style="margin-top:1.5rem">Hébergements (${hb.length})</div>
+    ${hbHtml}
+    <details>
+      <summary>Ajouter un hébergement</summary>
+      <div class="detail-form">
+        <div class="form-grid">
+          <div class="form-row"><label>Type</label><select id="dhb-t"><option value="hotel">Hôtel</option><option value="airbnb">Airbnb</option><option value="chez l'habitant">Chez l'habitant</option><option value="auberge">Auberge</option><option value="camping">Camping</option><option value="autre">Autre</option></select></div>
+          <div class="form-row"><label>Prix/nuit (€)</label><input type="number" id="dhb-p" placeholder="0"></div>
+        </div>
+        <div class="form-row"><label>Adresse</label><input id="dhb-a" placeholder="Hôtel du Centre"></div>
+        <div class="form-row"><label>Lien</label><input type="url" id="dhb-l" placeholder="https://..."></div>
+        <div class="form-grid">
+          <div class="form-row"><label>Places</label><input type="number" id="dhb-pl" placeholder="2" min="1"></div>
+          <div class="form-row"><label>Ton prénom</label><input id="dhb-auteur" placeholder="Juju"></div>
+        </div>
+        <div class="form-row"><label>Notes</label><input id="dhb-n" placeholder="À partager..."></div>
+        <button class="btn btn-secondary" onclick="addHebergement('${f.id}')">+ Ajouter</button>
+      </div>
+    </details>
+  `;
+
+  document.getElementById('detail-edit-btn').onclick = () => openEditModal(f.id);
+  document.getElementById('detail-del-btn').onclick = () => openDeleteModal(f.id);
+  document.getElementById('detail-view').classList.add('open');
+  window.scrollTo(0,0);
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').classList.remove('open');
+  currentFestId = null;
+}
+
+// ─── ADD TRAJET / HEBERGEMENT ─────────────────────────────
+async function addTrajet(fid) {
+  const dep=document.getElementById('dtj-d').value.trim();
+  const arr=document.getElementById('dtj-a').value.trim();
+  if(!dep||!arr){alert('Remplis départ et arrivée !');return;}
+  const auteur=document.getElementById('dtj-auteur').value.trim()||'Anonyme';
+  const {error}=await sb.from('trajets').insert({
+    festival_id:fid,auteur,
+    mode:document.getElementById('dtj-m').value,
+    depart:dep,arrivee:arr,
+    date_trajet:document.getElementById('dtj-dt').value||null,
+    prix:parseInt(document.getElementById('dtj-p').value)||null,
+    notes:document.getElementById('dtj-n').value.trim()||null
+  });
+  if(!error){
+    await logActivity('trajet', funMsg('trajet') + ' ' + auteur + ' → ' + (festivals.find(f=>f.id===fid)?.nom||'festival'));
+    await loadAll();
+    openDetail(fid);
+  }
+}
+
+async function addHebergement(fid) {
+  const auteur=document.getElementById('dhb-auteur').value.trim()||'Anonyme';
+  const {error}=await sb.from('hebergements').insert({
+    festival_id:fid,auteur,
+    type:document.getElementById('dhb-t').value,
+    adresse:document.getElementById('dhb-a').value.trim()||null,
+    lien:document.getElementById('dhb-l').value.trim()||null,
+    prix_nuit:parseInt(document.getElementById('dhb-p').value)||null,
+    places:parseInt(document.getElementById('dhb-pl').value)||null,
+    notes:document.getElementById('dhb-n').value.trim()||null
+  });
+  if(!error){
+    await logActivity('hebergement', funMsg('hebergement') + ' par ' + auteur + ' pour ' + (festivals.find(f=>f.id===fid)?.nom||'un festival'));
+    await loadAll();
+    openDetail(fid);
+  }
+}
+
+// ─── PARTICIPANTS ────────────────────────────────────────────
+function renderParticipants() {
+  renderProfilForm();
+  renderProfilList();
+}
+
+function renderProfilForm() {
+  const col = document.getElementById('profil-form-col');
+  col.innerHTML = `
+    <div class="section-card">
+      <h3>👤 Mon profil</h3>
+      <input type="hidden" id="prof-id" value="">
+      <div class="form-row"><label>Prénom</label><input type="text" id="prof-nom" placeholder="Ex: Juju"></div>
+      <div class="form-row"><label>Ville de départ</label><input type="text" id="prof-ville" placeholder="Ex: Toulouse"></div>
+    </div>
+    <div class="section-card">
+      <h3>🗓️ Mes festivals</h3>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Participation · Hébergement · Transport</p>
+      ${festivals.map(f=>`
+        <div class="fest-item">
+          <div class="fest-item-name">${f.nom}</div>
+          <div class="fest-item-date">${fd(f.date_debut,f.date_fin)} · ${f.ville||''}</div>
+          <div class="three-col">
+            <div><div class="mini-label">🎟️</div><select class="mini" id="fs-${f.id}">${STATUT_SELECT}</select></div>
+            <div><div class="mini-label">🛏️</div><select class="mini" id="fh-${f.id}">${HEBERGEMENT_SELECT}</select></div>
+            <div><div class="mini-label">🚄</div><select class="mini" id="ft-${f.id}">${TRANSPORT_SELECT}</select></div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="btn btn-primary" onclick="saveProfile()">Enregistrer</button>
+    <button class="btn btn-secondary" onclick="resetProfilForm()" style="margin-top:6px">↩️ Réinitialiser le formulaire</button>
+    <div class="success" id="prof-ok">✅ Profil enregistré !</div>
+  `;
+}
+
+function renderProfilList() {
+  const col = document.getElementById('profil-list-col');
+  if(!participants.length){
+    col.innerHTML='<div class="section-card"><h3>👥 Participants</h3><p class="empty">Aucun participant pour l\'instant</p></div>';
+    return;
+  }
+  col.innerHTML = `<div class="section-card" style="position:sticky;top:60px">
+    <h3>👥 Participants</h3>
+    ${participants.map(p=>{
+      const pid='pe-'+p.id.replace(/-/g,'');
+      const myParts = participations.filter(pp=>pp.participant_id===p.id);
+      const festRows = myParts.map(pp=>{
+        const f=festivals.find(f=>f.id===pp.festival_id);
+        if(!f||pp.statut==='Non') return '';
+        const hIcon=pp.hebergement==="J'en ai un"?'🛏️✅':pp.hebergement==="J'en cherche un"?'🛏️🔍':'';
+        const tIcon=pp.transport==="J'en ai un"?'🚄✅':pp.transport==="J'en cherche un"?'🚄🔍':'';
+        return `<div class="pfest-row">
+          <div class="pfest-name">${f.nom}</div>
+          <span class="badge ${SC[pp.statut]||'b-todo'}" style="margin:0;font-size:10px">${SL[pp.statut]||pp.statut}</span>
+          ${hIcon?`<span style="font-size:12px">${hIcon}</span>`:''}
+          ${tIcon?`<span style="font-size:12px">${tIcon}</span>`:''}
+        </div>`;
+      }).filter(Boolean).join('');
+      return `<div class="participant-entry">
+        <div class="participant-hdr" onclick="togglePart('${pid}')">
+          <div class="pav">${ini(p.nom)}</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--text)">${p.nom}</div>${p.ville?`<div style="font-size:11px;color:var(--text3)">📍 ${p.ville}</div>`:''}</div>
+          <button onclick="event.stopPropagation();loadProfile('${p.id}')" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--accent);cursor:pointer;white-space:nowrap;font-family:inherit">✏️</button>
+          <span id="${pid}-arr" style="color:var(--text3);font-size:16px;margin-left:8px;transition:transform .2s;display:inline-block">▾</span>
+        </div>
+        <div class="participant-body" id="${pid}">
+          ${festRows||'<p class="empty" style="padding:4px 0">Aucun festival renseigné</p>'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function resetProfilForm() {
+  if(!confirm('Réinitialiser le formulaire ? Les modifications non sauvegardées seront perdues.')) return;
+  document.getElementById('prof-id').value = '';
+  document.getElementById('prof-nom').value = '';
+  document.getElementById('prof-ville').value = '';
+  festivals.forEach(f => {
+    const s = document.getElementById('fs-'+f.id);
+    const h = document.getElementById('fh-'+f.id);
+    const t = document.getElementById('ft-'+f.id);
+    if(s) s.value = 'Non';
+    if(h) h.value = '?';
+    if(t) t.value = '?';
+  });
+  document.querySelectorAll('.profile-chip').forEach(c=>c.classList.remove('active'));
+}
+
+function togglePart(pid){
+  const el=document.getElementById(pid);
+  const arr=document.getElementById(pid+'-arr');
+  if(!el) return;
+  const open=el.classList.contains('open');
+  el.classList.toggle('open');
+  if(arr) arr.style.transform=open?'':'rotate(180deg)';
+}
+
+function loadProfile(pid) {
+  const p=participants.find(x=>x.id===pid);
+  if(!p) return;
+  // Demander confirmation
+  const confirm1 = confirm('👋 C\'est bien toi, ' + p.nom + ' ?');
+  if(!confirm1){
+    alert('💡 Si tu veux modifier ton propre profil, clique sur ton prénom à toi !');
+    return;
+  }
+  document.querySelectorAll('.profile-chip').forEach(c=>c.classList.toggle('active',c.textContent===p.nom));
+  document.getElementById('prof-id').value=p.id;
+  document.getElementById('prof-nom').value=p.nom;
+  document.getElementById('prof-ville').value=p.ville||'';
+  festivals.forEach(f=>{
+    const pp=participations.find(x=>x.participant_id===pid&&x.festival_id===f.id);
+    const s=document.getElementById('fs-'+f.id);
+    const h=document.getElementById('fh-'+f.id);
+    const t=document.getElementById('ft-'+f.id);
+    if(s) s.value=pp?.statut||'Non';
+    if(h) h.value=pp?.hebergement||'?';
+    if(t) t.value=pp?.transport||'?';
+  });
+  document.getElementById('profil-form-col').scrollIntoView({behavior:'smooth'});
+}
+
+async function saveProfile() {
+  const nom=document.getElementById('prof-nom').value.trim();
+  if(!nom){alert('Entre ton prénom !');return;}
+  const ville=document.getElementById('prof-ville').value.trim();
+  const existingId=document.getElementById('prof-id').value;
+
+  let pid=existingId;
+  if(!pid){
+    const {data,error}=await sb.from('participants').insert({nom,ville}).select().single();
+    if(error||!data){alert('Erreur lors de la création du profil');return;}
+    pid=data.id;
+    participants.push(data);
+    await logActivity('participant', funMsg('participant') + ' ' + nom + ' est là !');
+  } else {
+    await sb.from('participants').update({nom,ville}).eq('id',pid);
+    const idx=participants.findIndex(p=>p.id===pid);
+    if(idx>=0) participants[idx]={...participants[idx],nom,ville};
+  }
+
+  // Save participations
+  for(const f of festivals){
+    const statut=document.getElementById('fs-'+f.id)?.value||'Non';
+    const hebergement=document.getElementById('fh-'+f.id)?.value||'?';
+    const transport=document.getElementById('ft-'+f.id)?.value||'?';
+    const existing=participations.find(pp=>pp.participant_id===pid&&pp.festival_id===f.id);
+    if(existing){
+      await sb.from('participations').update({statut,hebergement,transport}).eq('id',existing.id);
+      const idx=participations.findIndex(pp=>pp.id===existing.id);
+      if(idx>=0) participations[idx]={...participations[idx],statut,hebergement,transport};
+    } else {
+      const {data}=await sb.from('participations').insert({participant_id:pid,festival_id:f.id,statut,hebergement,transport}).select().single();
+      if(data) participations.push(data);
+    }
+    if(statut!=='Non'&&(!existing||existing.statut==='Non')){
+      await logActivity('participation', funMsg('participation') + ' ' + nom + ' → ' + f.nom + ' (' + (SL[statut]||statut) + ')');
+    } else if(statut!=='Non'&&existing&&existing.statut!=='Non'&&existing.statut!==statut){
+      await logActivity('participation', '🔄 ' + nom + ' met à jour son statut pour ' + f.nom + ' : ' + (SL[statut]||statut));
+    } else if(statut==='Non'&&existing&&existing.statut!=='Non'){
+      // Demander une raison
+      const raison = prompt('😢 Dommage que ' + nom + ' ne puisse pas venir à ' + f.nom + ' !\nUne raison ? (optionnel)');
+      const msg = raison 
+        ? funMsg('absence') + ' ' + nom + ' ne vient pas à ' + f.nom + ' parce que : "' + raison + '"'
+        : funMsg('absence') + ' ' + nom + ' ne vient pas à ' + f.nom;
+      await logActivity('absence', msg);
+    }
+  }
+
+  document.getElementById('prof-ok').style.display='block';
+  setTimeout(()=>{document.getElementById('prof-ok').style.display='none';},2000);
+  renderAll();
+}
+
+// ─── AJOUTER FESTIVAL ────────────────────────────────────────
+function renderAjouter() {
+  document.getElementById('ajouter-content').innerHTML=`
+    <div class="section-card">
+      <h3>📅 Ajouter un festival</h3>
+      <div style="background:rgba(50,160,100,.1);border:1px solid rgba(50,160,100,.3);border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:1rem;font-size:12px;color:var(--text2)">
+        ℹ️ Les festivals ajoutés sont visibles par tous les membres. Vérifiez qu'il n'existe pas déjà avant d'ajouter.
+      </div>
+      <div class="import-box">
+        <div class="import-box-title">✨ Importer depuis un site web</div>
+        <div class="import-row">
+          <input type="url" id="nf-url" placeholder="https://festival-swing.com">
+          <button class="import-btn" onclick="importFromUrl()">Récupérer</button>
+        </div>
+        <div class="import-status" id="import-status"></div>
+      </div>
+      <div class="form-row"><label>Nom</label><input type="text" id="nf-nom" placeholder="Ex: Switch Queer Festival Toulouse"></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Début</label><input type="date" id="nf-debut"></div>
+        <div class="form-row"><label>Fin</label><input type="date" id="nf-fin"></div>
+      </div>
+      <div class="form-row"><label>Ville</label><input type="text" id="nf-ville" placeholder="Ex: Toulouse, France"></div>
+      <div class="form-row"><label>Lien</label><input type="url" id="nf-lien" placeholder="https://..."></div>
+      <div class="form-row"><label>Prix pass (€)</label><input type="number" id="nf-prix" placeholder="0"></div>
+      <div class="form-row"><label>Style(s)</label>
+        <div class="style-checks">
+          <label class="style-check"><input type="checkbox" value="Lindy Hop" class="nf-style"> Lindy Hop</label>
+          <label class="style-check"><input type="checkbox" value="Blues" class="nf-style"> Blues</label>
+          <label class="style-check"><input type="checkbox" value="Balboa" class="nf-style"> Balboa</label>
+          <label class="style-check"><input type="checkbox" value="Switch" class="nf-style"> Switch</label>
+          <label class="style-check"><input type="checkbox" value="Queer" class="nf-style"> Queer</label>
+          <label class="style-check"><input type="checkbox" value="Solo" class="nf-style"> Solo</label>
+        </div>
+      </div>
+      <div class="form-row"><label>Mon statut</label><select id="nf-statut">${STATUT_SELECT}</select></div>
+      <div class="form-row"><label>Notes</label><textarea id="nf-notes" placeholder="Infos utiles, tarifs..."></textarea></div>
+      <button class="btn btn-primary" onclick="addFestival()">Ajouter ce festival</button>
+      <button class="btn btn-secondary" onclick="renderAjouter()" style="margin-top:6px">↩️ Tout effacer</button>
+      <div class="success" id="nf-ok">✅ Festival ajouté !</div>
+    </div>
+  `;
+}
+
+async function importFromUrl() {
+  const url=document.getElementById('nf-url').value.trim();
+  if(!url){alert('Entre une URL !');return;}
+  const btn=document.querySelector('.import-btn');
+  const status=document.getElementById('import-status');
+  btn.disabled=true;btn.textContent='⏳';
+  status.style.display='block';status.style.color='var(--text3)';status.textContent='Chargement...';
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0';
+  iframe.src=url;document.body.appendChild(iframe);
+  const done=()=>{btn.disabled=false;btn.textContent='Récupérer';try{document.body.removeChild(iframe);}catch(e){}};
+  const t=setTimeout(()=>{done();status.style.color='#903030';status.textContent='❌ Site inaccessible. Remplis manuellement.';},8000);
+  iframe.onload=()=>{
+    clearTimeout(t);
+    try{
+      const doc=iframe.contentDocument||iframe.contentWindow.document;
+      const gm=n=>{const e=doc.querySelector(`meta[property="${n}"],meta[name="${n}"]`);return e?e.getAttribute('content'):null;};
+      const nom=gm('og:title')||gm('twitter:title')||doc.title||'';
+      const desc=gm('og:description')||gm('description')||'';
+      const body=doc.body?doc.body.innerText:'';
+      const dates=(body.match(/20\d{2}-\d{2}-\d{2}/g)||[]).slice(0,2);
+      if(nom) document.getElementById('nf-nom').value=nom.replace(/\s*[\|\-–]\s*.+$/,'').trim();
+      if(dates[0]) document.getElementById('nf-debut').value=dates[0];
+      if(dates[1]) document.getElementById('nf-fin').value=dates[1];
+      document.getElementById('nf-lien').value=url;
+      if(desc) document.getElementById('nf-notes').value=desc.slice(0,200);
+      status.style.color='var(--s-yes)';status.textContent=nom?'✅ Infos récupérées !':'⚠️ Peu d\'infos trouvées.';
+    }catch(e){status.style.color='#903030';status.textContent='❌ Site bloqué. Remplis manuellement.';}
+    done();
+  };
+  iframe.onerror=()=>{clearTimeout(t);done();status.style.color='#903030';status.textContent='❌ Erreur de chargement.';};
+}
+
+async function addFestival() {
+  const nom=document.getElementById('nf-nom').value.trim();
+  if(!nom){alert('Entre un nom !');return;}
+  // Vérification doublon
+  const doublon = festivals.find(f=>f.nom.toLowerCase().trim()===nom.toLowerCase().trim());
+  if(doublon){
+    if(!confirm(`⚠️ Un festival similaire existe déjà : "${doublon.nom}" (${doublon.ville||'?'}, ${doublon.date_debut||'?'}).
+
+Voulez-vous quand même l'ajouter ?`)) return;
+  }
+  const ville=document.getElementById('nf-ville').value.trim();
+  const styles=[...document.querySelectorAll('.nf-style:checked')].map(c=>c.value);
+  
+  let lat=null,lng=null;
+  if(ville){
+    const coords=await geocode(ville);
+    if(coords){lat=coords.lat;lng=coords.lng;}
+  }
+
+  const {data,error}=await sb.from('festivals').insert({
+    nom,ville:ville||null,
+    date_debut:document.getElementById('nf-debut').value||null,
+    date_fin:document.getElementById('nf-fin').value||null,
+    statut:document.getElementById('nf-statut').value,
+    styles:styles.length?styles:[],
+    prix:parseInt(document.getElementById('nf-prix').value)||null,
+    lien:document.getElementById('nf-lien').value.trim()||null,
+    notes:document.getElementById('nf-notes').value.trim()||null,
+    lat,lng
+  }).select().single();
+
+  if(!error&&data){
+    festivals.push(data);
+    await logActivity('festival', funMsg('festival') + ' — ' + nom + ' à ' + (ville||'?'));
+    document.getElementById('nf-ok').style.display='block';
+    setTimeout(()=>{document.getElementById('nf-ok').style.display='none';renderAjouter();},1500);
+    renderFestivals();
+    if(map&&lat&&lng) renderMapMarkers();
+  } else {
+    alert('Erreur lors de l\'ajout. Vérifie ta connexion.');
+  }
+}
+
+// ─── EDIT / DELETE FESTIVAL ──────────────────────────────────
+function openEditModal(fid) {
+  const f=festivals.find(x=>x.id===fid);
+  if(!f) return;
+  document.getElementById('modal-content').innerHTML=`
+    <h2>✏️ Modifier le festival</h2>
+    <div class="form-row"><label>Nom</label><input id="ef-nom" value="${f.nom}"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Début</label><input type="date" id="ef-debut" value="${f.date_debut||''}"></div>
+      <div class="form-row"><label>Fin</label><input type="date" id="ef-fin" value="${f.date_fin||''}"></div>
+    </div>
+    <div class="form-row"><label>Ville</label><input id="ef-ville" value="${f.ville||''}"></div>
+    <div class="form-row"><label>Lien</label><input type="url" id="ef-lien" value="${f.lien||''}"></div>
+    <div class="form-row"><label>Prix (€)</label><input type="number" id="ef-prix" value="${f.prix||''}"></div>
+    <div class="form-row"><label>Statut</label><select id="ef-statut">${STATUT_SELECT}</select></div>
+    <div class="form-row"><label>Notes</label><textarea id="ef-notes">${f.notes||''}</textarea></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal()" style="margin:0">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEdit('${fid}')" style="margin:0">Enregistrer</button>
+    </div>
+  `;
+  document.getElementById('ef-statut').value=f.statut||'Non';
+  openModal();
+}
+
+async function saveEdit(fid) {
+  const ville=document.getElementById('ef-ville').value.trim();
+  const f=festivals.find(x=>x.id===fid);
+  let lat=f?.lat,lng=f?.lng;
+  if(ville&&ville!==f?.ville){
+    const coords=await geocode(ville);
+    if(coords){lat=coords.lat;lng=coords.lng;}
+  }
+  const updates={
+    nom:document.getElementById('ef-nom').value.trim(),
+    date_debut:document.getElementById('ef-debut').value||null,
+    date_fin:document.getElementById('ef-fin').value||null,
+    ville:ville||null,
+    lien:document.getElementById('ef-lien').value.trim()||null,
+    prix:parseInt(document.getElementById('ef-prix').value)||null,
+    statut:document.getElementById('ef-statut').value,
+    notes:document.getElementById('ef-notes').value.trim()||null,
+    lat,lng
+  };
+  await sb.from('festivals').update(updates).eq('id',fid);
+  const idx=festivals.findIndex(x=>x.id===fid);
+  if(idx>=0) festivals[idx]={...festivals[idx],...updates};
+  await logActivity('festival', `✏️ Festival mis à jour : ${updates.nom}`);
+  closeModal();
+  renderAll();
+  openDetail(fid);
+}
+
+function openDeleteModal(fid) {
+  const f=festivals.find(x=>x.id===fid);
+  document.getElementById('modal-content').innerHTML=`
+    <h2>🗑️ Supprimer ce festival ?</h2>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:.5rem">"${f?.nom}" sera supprimé définitivement avec tous ses trajets et hébergements.</p>
+    <p style="color:var(--text3);font-size:12px;margin-bottom:1rem">⚠️ Cette action est irréversible. Le mot de passe admin sera demandé.</p>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal()" style="margin:0">← Annuler</button>
+      <button class="btn btn-danger" onclick="confirmDelete('${fid}')" style="margin:0">Supprimer quand même</button>
+    </div>
+  `;
+  openModal();
+}
+
+async function confirmDelete(fid) {
+  const pwd = prompt('🔐 Mot de passe admin pour supprimer ce festival :');
+  if(pwd !== ADMIN_PWD){ alert('Mot de passe incorrect.'); return; }
+  await sb.from('festivals').delete().eq('id',fid);
+  festivals=festivals.filter(x=>x.id!==fid);
+  participations=participations.filter(x=>x.festival_id!==fid);
+  trajets=trajets.filter(x=>x.festival_id!==fid);
+  hebergements=hebergements.filter(x=>x.festival_id!==fid);
+  await logActivity('suppression',`Festival supprimé (admin)`);
+  closeModal();
+  closeDetail();
+  renderAll();
+}
+
+// ─── MODAL ──────────────────────────────────────────────────
+function openModal(){document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+
+// ─── CONTACT ─────────────────────────────────────────────────
+function openContact(){document.getElementById('contact-overlay').classList.add('open');}
+function closeContact(){document.getElementById('contact-overlay').classList.remove('open');}
+async function sendContact() {
+  const nom=document.getElementById('c-nom').value.trim();
+  const msg=document.getElementById('c-msg').value.trim();
+  const status=document.getElementById('c-status');
+  if(!nom||!msg){status.style.display='block';status.textContent='Remplis tous les champs.';return;}
+  const {error}=await sb.from('messages').insert({nom,message:msg});
+  status.style.display='block';
+  if(!error){status.style.color='var(--s-yes)';status.textContent='✅ Message envoyé !';setTimeout(closeContact,2000);}
+  else{status.style.color='#903030';status.textContent='Erreur. Réessaie.';}
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────
+function openAdmin(){document.getElementById('admin-overlay').classList.add('open');}
+function closeAdmin(){document.getElementById('admin-overlay').classList.remove('open');}
+function checkPwd(){
+  const pwd=document.getElementById('admin-pwd').value;
+  if(pwd===ADMIN_PWD){
+    document.getElementById('admin-login').style.display='none';
+    document.getElementById('admin-content').classList.add('open');
+    loadAdminMsgs();
+  }else{
+    document.getElementById('admin-err').style.display='block';
+    document.getElementById('admin-pwd').value='';
+  }
+}
+async function loadAdminMsgs(){
+  const el=document.getElementById('admin-msgs');
+  const {data}=await sb.from('messages').select('*').order('created_at',{ascending:false});
+  if(!data||!data.length){el.innerHTML='<p class="empty">Aucun message.</p>';return;}
+  el.innerHTML=data.map(m=>`<div class="msg-card">
+    <div class="msg-header">
+      <div class="msg-name">👤 ${m.nom}</div>
+      <div class="msg-date">${new Date(m.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+    <div class="msg-text">${m.message}</div>
+    <button onclick="deleteMsg('${m.id}',this)" style="margin-top:8px;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(160,40,40,.4);background:none;color:#903030;cursor:pointer;font-family:inherit">🗑️ Supprimer</button>
+  </div>`).join('');
+}
+async function deleteMsg(id,btn){
+  if(!confirm('Supprimer ?')) return;
+  await sb.from('messages').delete().eq('id',id);
+  btn.closest('.msg-card').remove();
+}
+
+// Mobile: triple-tap footer for admin
+let taps=0,tapTimer;
+document.getElementById('site-footer').addEventListener('click',()=>{
+  taps++;clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>{taps=0;},800);
+  if(taps>=3){taps=0;openAdmin();}
+});
+
+// ─── NAV ─────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    const tab=document.getElementById('tab-'+btn.dataset.tab);
+    if(tab) tab.classList.add('active');
+    if(btn.dataset.tab==='participants'){
+      const gifWrap = document.getElementById('gif-participants');
+      const gifImg = document.getElementById('swing-gif');
+      if(gifWrap) gifWrap.style.display='block';
+      if(gifImg && gifImg.dataset.src && !gifImg.src.includes('swing.gif')){
+        setTimeout(()=>{ gifImg.src = gifImg.dataset.src; }, 1500);
+      }
+    }
+    if(btn.dataset.tab==='carte'){
+      setTimeout(()=>{
+        initMap();
+        if(map) map.invalidateSize();
+        // Geocode missing
+        festivals.filter(f=>!f.lat&&f.ville).forEach(async(f,i)=>{
+          await new Promise(r=>setTimeout(r,i*400));
+          const c=await geocode(f.ville);
+          if(c){
+            await sb.from('festivals').update({lat:c.lat,lng:c.lng}).eq('id',f.id);
+            f.lat=c.lat;f.lng=c.lng;
+            renderMapMarkers();
+          }
+        });
+      },50);
+    }
+  });
+});
+
+// ─── REALTIME ────────────────────────────────────────────────
+sb.channel('swingjulep')
+  .on('postgres_changes',{event:'*',schema:'public',table:'festivals'},()=>loadAll())
+  .on('postgres_changes',{event:'*',schema:'public',table:'participations'},()=>loadAll())
+  .on('postgres_changes',{event:'*',schema:'public',table:'activite'},()=>loadAll())
+  .subscribe();
+
+// ─── INIT ────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
