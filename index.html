@@ -1091,39 +1091,74 @@ async function importFromUrl() {
   const btn = document.querySelector('[onclick="importFromUrl()"]');
   const status = document.getElementById('import-status');
   btn.disabled=true; btn.textContent='⏳';
-  status.style.display='block'; status.style.color='var(--text3)'; status.textContent='Chargement...';
-  const iframe = document.createElement('iframe');
-  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0';
-  iframe.src=url; document.body.appendChild(iframe);
-  const done=()=>{btn.disabled=false;btn.textContent='Récupérer';try{document.body.removeChild(iframe);}catch(e){}};
-  const t=setTimeout(()=>{done();status.style.color='#903030';status.textContent='❌ Site inaccessible. Remplis manuellement.';},9000);
-  iframe.onload=()=>{
-    clearTimeout(t);
-    try{
-      const doc=iframe.contentDocument||iframe.contentWindow.document;
-      const gm=n=>{const e=doc.querySelector('meta[property="'+n+'"],meta[name="'+n+'"]');return e?e.getAttribute('content'):null;};
-      const nom=(gm('og:title')||gm('twitter:title')||doc.title||'').replace(/\s*[\|\-–]\s*.+$/,'').trim();
-      const desc=gm('og:description')||gm('twitter:description')||gm('description')||'';
-      const body=doc.body?doc.body.innerText:'';
-      // Parser dates FR + EN sur tout le contenu disponible
-      const allText = desc + ' ' + body;
-      const {d1, d2} = parseDatesFromText(allText);
-      const priceMatch = allText.match(/(\d+)[,.]?(\d*)\s*€/);
-      if(nom) document.getElementById('nf-nom').value = nom;
-      if(d1) document.getElementById('nf-debut').value = d1;
-      if(d2 && d2!==d1) document.getElementById('nf-fin').value = d2;
-      else if(d1) document.getElementById('nf-fin').value = d1;
-      if(priceMatch) document.getElementById('nf-prix').value = priceMatch[1];
-      document.getElementById('nf-lien').value = url;
-      if(desc) document.getElementById('nf-notes').value = desc.slice(0,200);
-      status.style.color='var(--s-yes)';
-      status.textContent = nom ? '✅ Infos récupérées ! Vérifie et complète.' : '⚠️ Peu d\'infos trouvées. Remplis manuellement.';
-    }catch(e){
-      status.style.color='#903030'; status.textContent='❌ Site bloqué par sécurité. Remplis manuellement.';
+  status.style.display='block'; status.style.color='var(--text3)';
+  status.textContent='Analyse du site en cours…';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Visite cette page de festival de danse swing : ${url}
+
+Extrais les informations et réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans backticks :
+{
+  "nom": "Nom complet du festival",
+  "dateDebut": "YYYY-MM-DD",
+  "dateFin": "YYYY-MM-DD",
+  "ville": "Ville, Pays",
+  "prix": 120,
+  "styles": ["Lindy Hop"],
+  "notes": "Description courte"
+}
+
+Pour les styles choisis parmi : Lindy Hop, Blues, Balboa, Switch, Queer, Solo.
+Pour le prix, mets le minimum en nombre entier (ou null).
+Si une info est inconnue mets null.`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    // Extraire le texte de la réponse (peut contenir des blocs tool_use)
+    let text = '';
+    for(const block of (data.content || [])){
+      if(block.type === 'text') text += block.text;
     }
-    done();
-  };
-  iframe.onerror=()=>{clearTimeout(t);done();status.style.color='#903030';status.textContent='❌ Erreur de chargement.';};
+
+    // Parser le JSON
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('Pas de données JSON dans la réponse');
+    const info = JSON.parse(jsonMatch[0]);
+
+    if(info.nom) document.getElementById('nf-nom').value = info.nom;
+    if(info.dateDebut) document.getElementById('nf-debut').value = info.dateDebut;
+    if(info.dateFin) document.getElementById('nf-fin').value = info.dateFin;
+    if(info.ville) document.getElementById('nf-ville').value = info.ville;
+    if(info.prix) document.getElementById('nf-prix').value = info.prix;
+    if(info.notes) document.getElementById('nf-notes').value = info.notes;
+    document.getElementById('nf-lien').value = url;
+    if(info.styles && Array.isArray(info.styles)){
+      document.querySelectorAll('.nf-style').forEach(cb => {
+        cb.checked = info.styles.includes(cb.value);
+      });
+    }
+
+    status.style.color='var(--s-yes)';
+    status.textContent = info.nom ? '✅ Infos récupérées ! Vérifie et complète.' : '⚠️ Peu d\'infos trouvées. Remplis manuellement.';
+
+  } catch(e) {
+    status.style.color='#903030';
+    status.textContent = '❌ Impossible de récupérer les infos. Remplis manuellement.';
+    console.error('Import error:', e);
+  }
+
+  btn.disabled=false; btn.textContent='Récupérer';
 }
 
 async function addFestival() {
