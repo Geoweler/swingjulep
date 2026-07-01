@@ -14,8 +14,8 @@
 <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22SwingJulep%22%2C%22short_name%22%3A%22SwingJulep%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a3a30%22%2C%22theme_color%22%3A%22%231a3a30%22%2C%22start_url%22%3A%22.%22%7D">
 
 <!-- Icons -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%232a7a60'/><circle cx='50' cy='50' r='50' fill='none' stroke='%2340c090' stroke-width='6'/><text x='50' y='66' text-anchor='middle' font-family='Georgia' font-weight='bold' font-size='38' fill='%23e8f8f0'>SJ</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%231a3a30'/><circle cx='90' cy='90' r='78' fill='%232a7a60'/><circle cx='90' cy='90' r='78' fill='none' stroke='%2340c090' stroke-width='8'/><text x='90' y='118' text-anchor='middle' font-family='Georgia' font-weight='bold' font-size='68' fill='%23e8f8f0'>SJ</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231a3a30'/><circle cx='50' cy='50' r='48' fill='none' stroke='%2340c090' stroke-width='3'/><path d='M50 50 C 35 45, 25 30, 30 18 C 42 22, 50 35, 50 50 Z' fill='%2340c090'/><path d='M50 50 C 65 45, 75 30, 70 18 C 58 22, 50 35, 50 50 Z' fill='%2350d8a0'/><path d='M50 18 L50 50' stroke='%231a3a30' stroke-width='1.5'/><path d='M50 50 L50 82' stroke='%2340c090' stroke-width='3' stroke-linecap='round'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%231a3a30'/><g transform='translate(0,8)'><path d='M90 90 C 63 81, 45 54, 54 32 C 76 40, 90 63, 90 90 Z' fill='%2340c090'/><path d='M90 90 C 117 81, 135 54, 126 32 C 104 40, 90 63, 90 90 Z' fill='%2350d8a0'/><path d='M90 32 L90 90' stroke='%231a3a30' stroke-width='2.5'/><path d='M90 90 L90 148' stroke='%2340c090' stroke-width='5' stroke-linecap='round'/></g></svg>">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -355,10 +355,22 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
     </div>
     <div class="admin-content" id="admin-content">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
-        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text)">📬 Messages</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text)">🔐 Administration</div>
         <button onclick="closeAdmin()" style="padding:8px 18px;border:1.5px solid var(--border2);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500">← Retour</button>
       </div>
-      <div id="admin-msgs"><div class="loading"><div class="spinner"></div></div></div>
+
+      <div class="section-card">
+        <h3>🔄 Rafraîchir les festivals</h3>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Relit le site de chaque festival ayant un lien, et propose les changements détectés (dates, prix, notes…) à valider un par un.</p>
+        <button class="btn btn-primary" onclick="startRefreshAll()" id="refresh-all-btn">Lancer le rafraîchissement</button>
+        <div id="refresh-status" style="font-size:12px;color:var(--text3);margin-top:8px;display:none"></div>
+        <div id="refresh-results" style="margin-top:1rem"></div>
+      </div>
+
+      <div class="section-card">
+        <h3>📬 Messages</h3>
+        <div id="admin-msgs"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -458,6 +470,8 @@ async function loadAll() {
     try {
       localStorage.setItem('swingjulep_cache', JSON.stringify({festivals,participants,participations,trajets,hebergements,activites,cachedAt:Date.now()}));
     } catch(e) {}
+    // Mise à jour automatique festivals passés (en arrière-plan)
+    autoMarkPastFestivals();
   } catch(e) {
     const msg = (e && e.message) ? String(e.message) : 'Erreur inconnue';
     console.error('Supabase error:', msg);
@@ -532,6 +546,21 @@ async function logActivity(type, description) {
 }
 
 // ─── RENDER ALL ─────────────────────────────────────────────
+// ─── AUTO-MARK FESTIVALS PASSÉS ──────────────────────────────
+async function autoMarkPastFestivals() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const toMark = festivals.filter(f => {
+    if(!f.date_fin) return false;
+    const end = new Date(f.date_fin+'T23:59:59');
+    return end < today && f.statut !== 'Passé';
+  });
+  for(const f of toMark){
+    await sb.from('festivals').update({statut:'Passé'}).eq('id', f.id);
+    f.statut = 'Passé';
+  }
+  if(toMark.length) renderFestivals();
+}
+
 function renderAll() {
   renderFestivals();
   renderParticipants();
@@ -587,6 +616,7 @@ function renderFestivals() {
   const grid = document.getElementById('festivals-grid');
   if(!festivals.length){ grid.innerHTML='<p style="color:var(--text3);padding:2rem">Aucun festival pour l\'instant.</p>'; return; }
   const grouped = byMonth(festivals);
+  const today = new Date(); today.setHours(0,0,0,0);
   grid.innerHTML = Object.entries(grouped).map(([m,fests])=>`
     <div class="month-header">${m}</div>
     ${fests.map(f=>{
@@ -594,10 +624,12 @@ function renderFestivals() {
       const styles = (f.styles||[]);
       const isSwitch = styles.includes('Switch') || (f.nom+' '+(f.notes||'')).toLowerCase().includes('switch');
       const isQueer = styles.includes('Queer') || (f.nom+' '+(f.notes||'')).toLowerCase().includes('queer');
-      return `<div class="card" onclick="openDetail('${f.id}')">
+      const endDate = f.date_fin ? new Date(f.date_fin+'T23:59:59') : null;
+      const isPast = endDate && endDate < today;
+      return `<div class="card" onclick="openDetail('${f.id}')" style="${isPast?'opacity:.45;filter:saturate(.5)':''}">
         <div class="card-top">
           <div>
-            <div class="card-name">${f.nom}</div>
+            <div class="card-name">${f.nom}${isPast?' <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">· Passé</span>':''}</div>
             <div class="card-date">${fd(f.date_debut,f.date_fin)}</div>
             <div class="card-city">📍 ${f.ville||''}</div>
           </div>
@@ -964,11 +996,15 @@ async function saveProfile() {
     if(idx>=0) participants[idx]={...participants[idx],nom,ville};
   }
 
-  // Save participations
+  // Save participations - temporarily enable disabled selects to read values
+  document.querySelectorAll('#fest-form-fields select').forEach(s=>s.disabled=false);
   for(const f of festivals){
-    const statut=document.getElementById('fs-'+f.id)?.value||'Non';
-    const hebergement=document.getElementById('fh-'+f.id)?.value||'?';
-    const transport=document.getElementById('ft-'+f.id)?.value||'?';
+    const sel = document.getElementById('fs-'+f.id);
+    const statut = (sel && sel.value) ? sel.value : 'Non';
+    const selH = document.getElementById('fh-'+f.id);
+    const hebergement = (selH && selH.value) ? selH.value : '?';
+    const selT = document.getElementById('ft-'+f.id);
+    const transport = (selT && selT.value) ? selT.value : '?';
     const existing=participations.find(pp=>pp.participant_id===pid&&pp.festival_id===f.id);
     if(existing){
       await sb.from('participations').update({statut,hebergement,transport}).eq('id',existing.id);
@@ -998,6 +1034,152 @@ async function saveProfile() {
 }
 
 // ─── AJOUTER FESTIVAL ────────────────────────────────────────
+function toggleEvenementPonctuel() {
+  const isPonctuel = document.getElementById('nf-ponctuel').checked;
+  document.getElementById('nf-nom-label').textContent = isPonctuel ? 'Nom de la soirée / événement' : 'Nom';
+  document.getElementById('nf-dates-grid').style.display = isPonctuel ? 'none' : 'grid';
+  document.getElementById('nf-date-unique-row').style.display = isPonctuel ? 'block' : 'none';
+  document.getElementById('nf-style-row').style.display = isPonctuel ? 'none' : 'block';
+  document.getElementById('nf-prix-label').textContent = isPonctuel ? 'Prix entrée (€)' : 'Prix pass (€)';
+}
+
+// ─── PARSEUR DE DATES (FR + EN) ───────────────────────────────
+function parseDatesFromText(text) {
+  const moisFR = {janvier:'01',février:'02',mars:'03',avril:'04',mai:'05',juin:'06',juillet:'07',août:'08',septembre:'09',octobre:'10',novembre:'11',décembre:'12'};
+  const moisEN = {january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
+  let d1 = null, d2 = null;
+
+  // ISO : 2026-07-16
+  const iso = text.match(/20\d{2}-\d{2}-\d{2}/g);
+  if(iso && iso.length >= 1){ d1 = iso[0]; d2 = iso[1] || iso[0]; return {d1,d2}; }
+
+  // Anglais : "January 8th-10th, 2027" ou "Jan 8-10, 2027" ou "January 8-10 2027"
+  const enRange = text.match(/(\w+)\s+(\d{1,2})(?:st|nd|rd|th)?[\s\-–]+(\d{1,2})(?:st|nd|rd|th)?,?\s*(20\d{2})/i);
+  if(enRange){
+    const m = (moisEN[enRange[1].toLowerCase()] || null);
+    if(m){ d1 = enRange[4]+'-'+m+'-'+enRange[2].padStart(2,'0'); d2 = enRange[4]+'-'+m+'-'+enRange[3].padStart(2,'0'); return {d1,d2}; }
+  }
+
+  // Anglais : "January 8, 2027"
+  const enSingle = text.match(/(\w+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(20\d{2})/i);
+  if(enSingle){
+    const m = (moisEN[enSingle[1].toLowerCase()] || null);
+    if(m){ d1 = enSingle[3]+'-'+m+'-'+enSingle[2].padStart(2,'0'); d2 = d1; return {d1,d2}; }
+  }
+
+  // Français : "8 au 10 juillet 2026"
+  const frRange = text.match(/(\d{1,2})\s+(?:au|et)\s+(\d{1,2})\s+([\wéèûùôîêâà]+)\s+(20\d{2})/i);
+  if(frRange){
+    const m = moisFR[frRange[3].toLowerCase()];
+    if(m){ d1 = frRange[4]+'-'+m+'-'+frRange[1].padStart(2,'0'); d2 = frRange[4]+'-'+m+'-'+frRange[2].padStart(2,'0'); return {d1,d2}; }
+  }
+
+  // Français : "16 juillet 2026"
+  const frSingle = text.match(/(\d{1,2})\s+([\wéèûùôîêâà]+)\s+(20\d{2})/i);
+  if(frSingle){
+    const m = moisFR[frSingle[2].toLowerCase()];
+    if(m){ d1 = frSingle[3]+'-'+m+'-'+frSingle[1].padStart(2,'0'); d2 = d1; return {d1,d2}; }
+  }
+
+  return {d1, d2};
+}
+
+// ─── IMPORT FESTIVAL DEPUIS URL ──────────────────────────────
+async function importFromUrl() {
+  const url = document.getElementById('nf-url').value.trim();
+  if(!url){ alert('Colle un lien de festival !'); return; }
+  const btn = document.querySelector('[onclick="importFromUrl()"]');
+  const status = document.getElementById('import-status');
+  btn.disabled=true; btn.textContent='⏳';
+  status.style.display='block'; status.style.color='var(--text3)'; status.textContent='Chargement...';
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0';
+  iframe.src=url; document.body.appendChild(iframe);
+  const done=()=>{btn.disabled=false;btn.textContent='Récupérer';try{document.body.removeChild(iframe);}catch(e){}};
+  const t=setTimeout(()=>{done();status.style.color='#903030';status.textContent='❌ Site inaccessible. Remplis manuellement.';},9000);
+  iframe.onload=()=>{
+    clearTimeout(t);
+    try{
+      const doc=iframe.contentDocument||iframe.contentWindow.document;
+      const gm=n=>{const e=doc.querySelector('meta[property="'+n+'"],meta[name="'+n+'"]');return e?e.getAttribute('content'):null;};
+      const nom=(gm('og:title')||gm('twitter:title')||doc.title||'').replace(/\s*[\|\-–]\s*.+$/,'').trim();
+      const desc=gm('og:description')||gm('twitter:description')||gm('description')||'';
+      const body=doc.body?doc.body.innerText:'';
+      // Parser dates FR + EN sur tout le contenu disponible
+      const allText = desc + ' ' + body;
+      const {d1, d2} = parseDatesFromText(allText);
+      const priceMatch = allText.match(/(\d+)[,.]?(\d*)\s*€/);
+      if(nom) document.getElementById('nf-nom').value = nom;
+      if(d1) document.getElementById('nf-debut').value = d1;
+      if(d2 && d2!==d1) document.getElementById('nf-fin').value = d2;
+      else if(d1) document.getElementById('nf-fin').value = d1;
+      if(priceMatch) document.getElementById('nf-prix').value = priceMatch[1];
+      document.getElementById('nf-lien').value = url;
+      if(desc) document.getElementById('nf-notes').value = desc.slice(0,200);
+      status.style.color='var(--s-yes)';
+      status.textContent = nom ? '✅ Infos récupérées ! Vérifie et complète.' : '⚠️ Peu d\'infos trouvées. Remplis manuellement.';
+    }catch(e){
+      status.style.color='#903030'; status.textContent='❌ Site bloqué par sécurité. Remplis manuellement.';
+    }
+    done();
+  };
+  iframe.onerror=()=>{clearTimeout(t);done();status.style.color='#903030';status.textContent='❌ Erreur de chargement.';};
+}
+
+async function addFestival() {
+  const nom = document.getElementById('nf-nom').value.trim();
+  if(!nom){ alert('Entre un nom !'); return; }
+
+  const isPonctuel = document.getElementById('nf-ponctuel').checked;
+  const ville = document.getElementById('nf-ville').value.trim();
+  const auteur = document.getElementById('nf-auteur').value.trim() || 'Anonyme';
+  const styles = isPonctuel ? ['Soirée'] : [...document.querySelectorAll('.nf-style:checked')].map(c=>c.value);
+
+  let dateDebut, dateFin;
+  if(isPonctuel){
+    const d = document.getElementById('nf-date-unique').value || null;
+    dateDebut = d; dateFin = d;
+  } else {
+    dateDebut = document.getElementById('nf-debut').value || null;
+    dateFin = document.getElementById('nf-fin').value || null;
+  }
+
+  // Vérification anti-doublon simple
+  const doublon = festivals.find(f => f.nom.trim().toLowerCase() === nom.toLowerCase());
+  if(doublon){
+    if(!confirm('⚠️ "' + doublon.nom + '" existe déjà (' + (doublon.ville||'?') + ', ' + (doublon.date_debut||'?') + '). Ajouter quand même ?')) return;
+  }
+
+  let lat = null, lng = null;
+  if(ville){
+    const coords = await geocode(ville);
+    if(coords){ lat = coords.lat; lng = coords.lng; }
+  }
+
+  const { data, error } = await sb.from('festivals').insert({
+    nom, ville: ville || null,
+    date_debut: dateDebut, date_fin: dateFin,
+    statut: 'À décider',
+    styles,
+    prix: parseInt(document.getElementById('nf-prix').value) || null,
+    lien: document.getElementById('nf-lien').value.trim() || null,
+    notes: document.getElementById('nf-notes').value.trim() || null,
+    lat, lng
+  }).select().single();
+
+  if(error || !data){ alert('Erreur lors de l\'ajout. Vérifie ta connexion.'); return; }
+
+  festivals.push(data);
+  const emoji = isPonctuel ? '🎈' : '🎉';
+  const label = emoji + ' ' + (isPonctuel ? 'Nouvel événement ajouté' : 'Nouveau festival ajouté') + ' — ' + nom + ' à ' + (ville||'?') + ' (ajouté par ' + auteur + ')';
+  await logActivity('festival', label);
+
+  document.getElementById('nf-ok').style.display = 'block';
+  setTimeout(()=>{ document.getElementById('nf-ok').style.display='none'; renderAjouter(); }, 1500);
+  renderFestivals();
+  if(map) renderMapMarkers();
+}
+
 function renderAjouter() {
   const festOptions = festivals.map(f=>`<option value="${f.id}">${f.nom} (${f.date_debut||'?'})</option>`).join('');
   const TRANSPORT_MODES = `<option value="train">🚄 Train</option><option value="avion">✈️ Avion</option><option value="voiture">🚗 Voiture</option><option value="covoiturage">👥 Covoiturage</option><option value="bus">🚌 Bus</option><option value="autre">🛣️ Autre</option>`;
@@ -1026,15 +1208,20 @@ function renderAjouter() {
         <div style="background:rgba(50,160,100,.1);border:1px solid rgba(50,160,100,.3);border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:1rem;font-size:12px;color:var(--text2)">
           ℹ️ Vérifiez qu'il n'existe pas déjà avant d'ajouter.
         </div>
-        <div class="form-row"><label>Nom</label><input type="text" id="nf-nom" placeholder="Ex: Switch Queer Festival Toulouse"></div>
-        <div class="form-grid">
+        <label class="style-check" style="margin-bottom:1rem;padding:.6rem .8rem;background:var(--bg2);border-radius:var(--rs);display:flex">
+          <input type="checkbox" id="nf-ponctuel" onchange="toggleEvenementPonctuel()">
+          <span>🎈 C'est un événement ponctuel (soirée, bal, stage…) plutôt qu'un festival sur plusieurs jours</span>
+        </label>
+        <div class="form-row"><label id="nf-nom-label">Nom</label><input type="text" id="nf-nom" placeholder="Ex: Switch Queer Festival Toulouse"></div>
+        <div class="form-grid" id="nf-dates-grid">
           <div class="form-row"><label>Début</label><input type="date" id="nf-debut"></div>
           <div class="form-row"><label>Fin</label><input type="date" id="nf-fin"></div>
         </div>
+        <div class="form-row" id="nf-date-unique-row" style="display:none"><label>Date</label><input type="date" id="nf-date-unique"></div>
         <div class="form-row"><label>Ville</label><input type="text" id="nf-ville" placeholder="Ex: Toulouse, France"></div>
         <div class="form-row"><label>Lien</label><input type="url" id="nf-lien" placeholder="https://..."></div>
-        <div class="form-row"><label>Prix pass (€)</label><input type="number" id="nf-prix" placeholder="0"></div>
-        <div class="form-row"><label>Style(s)</label>
+        <div class="form-row"><label id="nf-prix-label">Prix pass (€)</label><input type="number" id="nf-prix" placeholder="0"></div>
+        <div class="form-row" id="nf-style-row"><label>Style(s)</label>
           <div class="style-checks">
             <label class="style-check"><input type="checkbox" value="Lindy Hop" class="nf-style"> Lindy Hop</label>
             <label class="style-check"><input type="checkbox" value="Blues" class="nf-style"> Blues</label>
@@ -1046,9 +1233,9 @@ function renderAjouter() {
         </div>
         <div class="form-row"><label>Ton prénom <span style="font-size:11px;color:var(--text3)">(pour savoir qui a ajouté)</span></label><input type="text" id="nf-auteur" placeholder="Ex: Juju"></div>
         <div class="form-row"><label>Notes</label><textarea id="nf-notes" placeholder="Infos utiles, tarifs..."></textarea></div>
-        <button class="btn btn-primary" onclick="addFestival()">Ajouter ce festival</button>
+        <button class="btn btn-primary" onclick="addFestival()">Ajouter</button>
         <button class="btn btn-secondary" onclick="renderAjouter()" style="margin-top:6px">↩️ Tout effacer</button>
-        <div class="success" id="nf-ok">✅ Festival ajouté !</div>
+        <div class="success" id="nf-ok">✅ Ajouté !</div>
       </div>
     </div>
 
@@ -1358,14 +1545,39 @@ function openDeleteModal(fid) {
 }
 
 async function confirmDelete(fid) {
-  const pwd = prompt('🔐 Mot de passe admin pour supprimer ce festival :');
-  if(pwd !== ADMIN_PWD){ alert('Mot de passe incorrect.'); return; }
+  // Utiliser un modal custom car prompt() est bloqué en mode PWA standalone
+  const f = festivals.find(x=>x.id===fid);
+  document.getElementById('modal-content').innerHTML = `
+    <h2>🔐 Confirmation admin</h2>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:1rem">Entre le mot de passe admin pour supprimer <strong>${f?.nom||'ce festival'}</strong> :</p>
+    <div class="form-row">
+      <input type="password" id="del-pwd" placeholder="Mot de passe" autofocus
+        style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--rs);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;text-align:center;letter-spacing:.2em"
+        onkeydown="if(event.key==='Enter')doDelete('${fid}')">
+    </div>
+    <div id="del-err" style="color:#903030;font-size:12px;margin-top:4px;display:none">Mot de passe incorrect</div>
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn btn-secondary" onclick="closeModal()" style="margin:0">Annuler</button>
+      <button class="btn btn-danger" onclick="doDelete('${fid}')" style="margin:0">Supprimer</button>
+    </div>
+  `;
+  openModal();
+  setTimeout(()=>{ const i=document.getElementById('del-pwd'); if(i) i.focus(); }, 100);
+}
+
+async function doDelete(fid) {
+  const pwd = document.getElementById('del-pwd')?.value || '';
+  if(pwd !== ADMIN_PWD){
+    const err = document.getElementById('del-err');
+    if(err){ err.style.display='block'; err.textContent='Mot de passe incorrect'; }
+    return;
+  }
   await sb.from('festivals').delete().eq('id',fid);
   festivals=festivals.filter(x=>x.id!==fid);
   participations=participations.filter(x=>x.festival_id!==fid);
   trajets=trajets.filter(x=>x.festival_id!==fid);
   hebergements=hebergements.filter(x=>x.festival_id!==fid);
-  await logActivity('suppression',`Festival supprimé (admin)`);
+  await logActivity('suppression', 'Festival supprimé (admin)');
   closeModal();
   closeDetail();
   renderAll();
@@ -1420,6 +1632,120 @@ async function deleteMsg(id,btn){
   if(!confirm('Supprimer ?')) return;
   await sb.from('messages').delete().eq('id',id);
   btn.closest('.msg-card').remove();
+}
+
+// ─── REFRESH ALL FESTIVALS (admin) ───────────────────────────
+function extractFromIframeDoc(doc, url) {
+  const gm = n => { const e = doc.querySelector('meta[property="'+n+'"],meta[name="'+n+'"]'); return e ? e.getAttribute('content') : null; };
+  const title = gm('og:title') || gm('twitter:title') || doc.title || '';
+  const desc = gm('og:description') || gm('description') || '';
+  const body = doc.body ? doc.body.innerText : '';
+  const dates = (body.match(/20\d{2}-\d{2}-\d{2}/g) || []);
+  const priceMatch = body.match(/(\d+)[,.]?(\d*)\s*€/);
+  return {
+    nom: title ? title.replace(/\s*[\|\-–]\s*.+$/,'').trim() : null,
+    dateDebut: dates[0] || null,
+    dateFin: dates[1] || null,
+    prix: priceMatch ? parseInt(priceMatch[1]) : null,
+    notes: desc ? desc.slice(0,200) : null
+  };
+}
+
+function fetchUrlInfo(url) {
+  return new Promise((resolve) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0';
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    const cleanup = () => { try{ document.body.removeChild(iframe); }catch(e){} };
+    const t = setTimeout(()=>{ cleanup(); resolve(null); }, 8000);
+    iframe.onload = () => {
+      clearTimeout(t);
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        resolve(extractFromIframeDoc(doc, url));
+      } catch(e) { resolve(null); }
+      cleanup();
+    };
+    iframe.onerror = () => { clearTimeout(t); cleanup(); resolve(null); };
+  });
+}
+
+let pendingRefreshChanges = [];
+
+async function startRefreshAll() {
+  const btn = document.getElementById('refresh-all-btn');
+  const status = document.getElementById('refresh-status');
+  const results = document.getElementById('refresh-results');
+  const withLinks = festivals.filter(f => f.lien);
+  if(!withLinks.length){
+    status.style.display='block'; status.textContent='Aucun festival avec un lien à rafraîchir.';
+    return;
+  }
+  btn.disabled = true; btn.textContent = '⏳ Analyse en cours...';
+  status.style.display='block'; status.style.color='var(--text3)';
+  results.innerHTML = '';
+  pendingRefreshChanges = [];
+
+  for(let i=0; i<withLinks.length; i++){
+    const f = withLinks[i];
+    status.textContent = `Vérification ${i+1}/${withLinks.length} : ${f.nom}…`;
+    const info = await fetchUrlInfo(f.lien);
+    await new Promise(r=>setTimeout(r, 300));
+    if(!info) continue;
+
+    const diffs = [];
+    if(info.dateDebut && info.dateDebut !== f.date_debut) diffs.push({key:'date_debut', label:'Date de début', old:f.date_debut, neu:info.dateDebut});
+    if(info.dateFin && info.dateFin !== f.date_fin) diffs.push({key:'date_fin', label:'Date de fin', old:f.date_fin, neu:info.dateFin});
+    if(info.prix && info.prix !== f.prix) diffs.push({key:'prix', label:'Prix', old:f.prix, neu:info.prix});
+    if(diffs.length) pendingRefreshChanges.push({ festId: f.id, nom: f.nom, diffs });
+  }
+
+  btn.disabled = false; btn.textContent = 'Lancer le rafraîchissement';
+  if(!pendingRefreshChanges.length){
+    status.textContent = '✅ Tout est déjà à jour !';
+    return;
+  }
+  status.textContent = pendingRefreshChanges.length + ' festival(s) avec des changements détectés :';
+  renderRefreshResults();
+}
+
+function renderRefreshResults() {
+  const results = document.getElementById('refresh-results');
+  results.innerHTML = pendingRefreshChanges.map((c, idx) => `
+    <div class="tcard" id="refresh-card-${idx}">
+      <div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:8px">${c.nom}</div>
+      ${c.diffs.map(d => `
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:4px">
+          <span style="min-width:90px;color:var(--text3)">${d.label}</span>
+          <span style="text-decoration:line-through;color:var(--s-no)">${d.old ?? '—'}</span>
+          <span>→</span>
+          <span style="color:var(--s-yes);font-weight:600">${d.neu}</span>
+        </div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary" style="margin:0" onclick="applyRefresh(${idx})">✅ Valider</button>
+        <button class="btn btn-secondary" style="margin:0" onclick="dismissRefresh(${idx})">✕ Ignorer</button>
+      </div>
+    </div>`).join('');
+}
+
+async function applyRefresh(idx) {
+  const c = pendingRefreshChanges[idx];
+  if(!c) return;
+  const updates = {};
+  c.diffs.forEach(d => { updates[d.key] = d.neu; });
+  await sb.from('festivals').update(updates).eq('id', c.festId);
+  const f = festivals.find(x => x.id === c.festId);
+  if(f) Object.assign(f, updates);
+  await logActivity('festival', '🔄 Festival mis à jour automatiquement : ' + c.nom);
+  pendingRefreshChanges.splice(idx, 1);
+  renderRefreshResults();
+  renderFestivals();
+}
+
+function dismissRefresh(idx) {
+  pendingRefreshChanges.splice(idx, 1);
+  renderRefreshResults();
 }
 
 // Mobile: triple-tap footer for admin
