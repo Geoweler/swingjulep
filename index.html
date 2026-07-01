@@ -1130,54 +1130,74 @@ async function addFestival() {
   const nom = document.getElementById('nf-nom').value.trim();
   if(!nom){ alert('Entre un nom !'); return; }
 
-  const isPonctuel = document.getElementById('nf-ponctuel').checked;
+  // Feedback visuel immédiat
+  const btn = document.querySelector('[onclick="addFestival()"]');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Ajout en cours...'; }
+
+  const isPonctuel = document.getElementById('nf-ponctuel')?.checked || false;
   const ville = document.getElementById('nf-ville').value.trim();
   const auteur = document.getElementById('nf-auteur').value.trim() || 'Anonyme';
   const styles = isPonctuel ? ['Soirée'] : [...document.querySelectorAll('.nf-style:checked')].map(c=>c.value);
 
   let dateDebut, dateFin;
   if(isPonctuel){
-    const d = document.getElementById('nf-date-unique').value || null;
+    const d = document.getElementById('nf-date-unique')?.value || null;
     dateDebut = d; dateFin = d;
   } else {
     dateDebut = document.getElementById('nf-debut').value || null;
     dateFin = document.getElementById('nf-fin').value || null;
   }
 
-  // Vérification anti-doublon simple
+  // Vérification anti-doublon
   const doublon = festivals.find(f => f.nom.trim().toLowerCase() === nom.toLowerCase());
   if(doublon){
-    if(!confirm('⚠️ "' + doublon.nom + '" existe déjà (' + (doublon.ville||'?') + ', ' + (doublon.date_debut||'?') + '). Ajouter quand même ?')) return;
+    if(!confirm('⚠️ "' + doublon.nom + '" existe déjà (' + (doublon.ville||'?') + ', ' + (doublon.date_debut||'?') + '). Ajouter quand même ?')){
+      if(btn){ btn.disabled = false; btn.textContent = 'Ajouter'; }
+      return;
+    }
   }
 
+  // Géocodage avec timeout de 5s max pour ne pas bloquer
   let lat = null, lng = null;
   if(ville){
-    const coords = await geocode(ville);
-    if(coords){ lat = coords.lat; lng = coords.lng; }
+    try {
+      const coords = await Promise.race([
+        geocode(ville),
+        new Promise(r => setTimeout(() => r(null), 5000))
+      ]);
+      if(coords){ lat = coords.lat; lng = coords.lng; }
+    } catch(e) {}
   }
 
-  const { data, error } = await sb.from('festivals').insert({
-    nom, ville: ville || null,
-    date_debut: dateDebut, date_fin: dateFin,
-    statut: 'À décider',
-    styles,
-    prix: parseInt(document.getElementById('nf-prix').value) || null,
-    lien: document.getElementById('nf-lien').value.trim() || null,
-    notes: document.getElementById('nf-notes').value.trim() || null,
-    lat, lng
-  }).select().single();
+  try {
+    const { data, error } = await sb.from('festivals').insert({
+      nom, ville: ville || null,
+      date_debut: dateDebut, date_fin: dateFin,
+      statut: 'À décider',
+      styles,
+      prix: parseInt(document.getElementById('nf-prix').value) || null,
+      lien: document.getElementById('nf-lien').value.trim() || null,
+      notes: document.getElementById('nf-notes').value.trim() || null,
+      lat, lng
+    }).select().single();
 
-  if(error || !data){ alert('Erreur lors de l\'ajout. Vérifie ta connexion.'); return; }
+    if(error) throw new Error(error.message || JSON.stringify(error));
+    if(!data) throw new Error('Aucune donnée retournée');
 
-  festivals.push(data);
-  const emoji = isPonctuel ? '🎈' : '🎉';
-  const label = emoji + ' ' + (isPonctuel ? 'Nouvel événement ajouté' : 'Nouveau festival ajouté') + ' — ' + nom + ' à ' + (ville||'?') + ' (ajouté par ' + auteur + ')';
-  await logActivity('festival', label);
+    festivals.push(data);
+    const emoji = isPonctuel ? '🎈' : '🎉';
+    await logActivity('festival', emoji + ' ' + (isPonctuel ? 'Nouvel événement' : 'Nouveau festival') + ' — ' + nom + ' à ' + (ville||'?') + ' (ajouté par ' + auteur + ')');
 
-  document.getElementById('nf-ok').style.display = 'block';
-  setTimeout(()=>{ document.getElementById('nf-ok').style.display='none'; renderAjouter(); }, 1500);
-  renderFestivals();
-  if(map) renderMapMarkers();
+    if(btn){ btn.disabled = false; btn.textContent = 'Ajouter'; }
+    document.getElementById('nf-ok').style.display = 'block';
+    setTimeout(()=>{ document.getElementById('nf-ok').style.display='none'; renderAjouter(); }, 1500);
+    renderFestivals();
+    if(map) renderMapMarkers();
+
+  } catch(e) {
+    if(btn){ btn.disabled = false; btn.textContent = 'Ajouter'; }
+    alert('Erreur lors de l\'ajout : ' + (e.message || 'inconnue') + '\n\nVérifie ta connexion et réessaie.');
+  }
 }
 
 function renderAjouter() {
