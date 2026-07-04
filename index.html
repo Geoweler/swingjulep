@@ -1092,49 +1092,21 @@ async function importFromUrl() {
   const status = document.getElementById('import-status');
   btn.disabled=true; btn.textContent='⏳';
   status.style.display='block'; status.style.color='var(--text3)';
-  status.textContent='Analyse du site en cours…';
+  status.textContent='Analyse en cours…';
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Appel via Supabase Edge Function pour éviter les restrictions CORS
+    const response = await fetch('https://gtadmrkoirlpmvswzgpb.supabase.co/functions/v1/import-festival', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{
-          role: 'user',
-          content: `Visite cette page de festival de danse swing : ${url}
-
-Extrais les informations et réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, sans backticks :
-{
-  "nom": "Nom complet du festival",
-  "dateDebut": "YYYY-MM-DD",
-  "dateFin": "YYYY-MM-DD",
-  "ville": "Ville, Pays",
-  "prix": 120,
-  "styles": ["Lindy Hop"],
-  "notes": "Description courte"
-}
-
-Pour les styles choisis parmi : Lindy Hop, Blues, Balboa, Switch, Queer, Solo.
-Pour le prix, mets le minimum en nombre entier (ou null).
-Si une info est inconnue mets null.`
-        }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer sb_publishable_OMHPBKwPmAxeDHOLv1d7Vw_7BqNYAvX'
+      },
+      body: JSON.stringify({ url })
     });
 
-    const data = await response.json();
-    // Extraire le texte de la réponse (peut contenir des blocs tool_use)
-    let text = '';
-    for(const block of (data.content || [])){
-      if(block.type === 'text') text += block.text;
-    }
-
-    // Parser le JSON
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('Pas de données JSON dans la réponse');
-    const info = JSON.parse(jsonMatch[0]);
+    if(!response.ok) throw new Error('Réponse serveur: ' + response.status);
+    const info = await response.json();
 
     if(info.nom) document.getElementById('nf-nom').value = info.nom;
     if(info.dateDebut) document.getElementById('nf-debut').value = info.dateDebut;
@@ -1148,16 +1120,13 @@ Si une info est inconnue mets null.`
         cb.checked = info.styles.includes(cb.value);
       });
     }
-
     status.style.color='var(--s-yes)';
     status.textContent = info.nom ? '✅ Infos récupérées ! Vérifie et complète.' : '⚠️ Peu d\'infos trouvées. Remplis manuellement.';
 
   } catch(e) {
     status.style.color='#903030';
     status.textContent = '❌ Impossible de récupérer les infos. Remplis manuellement.';
-    console.error('Import error:', e);
   }
-
   btn.disabled=false; btn.textContent='Récupérer';
 }
 
