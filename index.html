@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SwingJulep">
-<meta name="theme-color" content="#1a3a30">
+<meta name="theme-color" content="#2C1A0E">
 <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22SwingJulep%22%2C%22short_name%22%3A%22SwingJulep%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a3a30%22%2C%22theme_color%22%3A%22%231a3a30%22%2C%22start_url%22%3A%22.%22%7D">
 
 <!-- Icons -->
@@ -29,37 +29,39 @@
 body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 
 :root{
-  /* ── Base verts/turquoise ── */
-  --bg:#e8f4ef;--bg2:#d4ecE3;--bg3:#bde0d4;
-  --card:#f0faf5;--card2:#e2f4ec;
-  --nav:#1a3a30;--nav2:#2a5a48;
-  --text:#0d2a20;--text2:#2a5a48;--text3:#5a8a78;
-  --border:rgba(30,90,70,.18);--border2:rgba(30,90,70,.32);
-  --accent:#2a7a60;--accent2:#40c090;
-  --shadow:0 2px 8px rgba(10,50,35,.12);
-  --r:12px;--rs:8px;
-  /* Statuts — différenciés forme+couleur (WCAG AA) */
-  --s-yes:#1a5a30;--s-yes-bg:#b8e8c8;   /* vert foncé / vert pâle */
-  --s-maybe:#2a5a7a;--s-maybe-bg:#b0d8f0; /* bleu-turquoise */
-  --s-wait:#6a2a7a;--s-wait-bg:#ddb8f0;  /* violet */
-  --s-todo:#3a4a40;--s-todo-bg:#c0d4cc;  /* gris-vert neutre */
-  --s-no:#5a4a40;--s-no-bg:#c8c0b8;     /* taupe */
-  --s-past:#4a5a58;--s-past-bg:#b8c8c4; /* gris-bleu */
+  /* ── Palette Terracotta / Ocre Bauhaus ── */
+  --bg:#F5EFE6;--bg2:#EDE4D6;--bg3:#E2D5C0;
+  --card:#FFFFFF;--card2:#FAF5EE;
+  --nav:#2C1A0E;--nav2:#3D2510;
+  --text:#2C1A0E;--text2:#6B4C35;--text3:#A08060;
+  --border:rgba(44,26,14,.12);--border2:rgba(44,26,14,.24);
+  --accent:#C4531A;--accent2:#A84010;
+  --red:#C4531A;--yellow:#D4940A;--blue:#1E5FD8;
+  --shadow:0 2px 0 rgba(44,26,14,.08),0 4px 16px rgba(44,26,14,.08);
+  --r:4px;--rs:2px;
+  --font-display:'Space Grotesk',sans-serif;
+  --s-yes:#2A6A30;--s-yes-bg:#C8E8C0;
+  --s-maybe:#1E5FD8;--s-maybe-bg:#C8D8F8;
+  --s-wait:#8A2AB8;--s-wait-bg:#E8C8F8;
+  --s-todo:#8A6A00;--s-todo-bg:#F0DFA0;
+  --s-no:#8A3A2A;--s-no-bg:#F0C8B8;
+  --s-past:#7A6A58;--s-past-bg:#DDD0C0;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#0a1a12;--bg2:#0f2218;--bg3:#162e20;
-  --card:#122018;--card2:#1a2e22;
-  --nav:#050e08;--nav2:#0e1e14;
-  --text:#c8eed8;--text2:#5aab80;--text3:#388060;
-  --border:rgba(50,160,100,.18);--border2:rgba(50,160,100,.32);
-  --accent:#38c088;--accent2:#50e0a8;
-  --shadow:0 2px 12px rgba(0,0,0,.5);
-  --s-yes:#70d890;--s-yes-bg:#082810;  /* vert */
-  --s-maybe:#50b8e0;--s-maybe-bg:#081828; /* turquoise */
-  --s-wait:#b870e0;--s-wait-bg:#180828;   /* violet */
-  --s-todo:#88a898;--s-todo-bg:#102018;   /* gris-vert */
-  --s-no:#788870;--s-no-bg:#101808;       /* taupe */
-  --s-past:#688888;--s-past-bg:#0c1818;   /* gris-bleu */
+  --bg:#1A100A;--bg2:#251808;--bg3:#302010;
+  --card:#251808;--card2:#302010;
+  --nav:#0E0806;--nav2:#1A100A;
+  --text:#F0E8DC;--text2:#C09870;--text3:#806050;
+  --border:rgba(255,200,150,.08);--border2:rgba(255,200,150,.16);
+  --accent:#E06830;--accent2:#F07840;
+  --red:#E06830;--yellow:#D4940A;--blue:#4A80FF;
+  --shadow:0 2px 0 rgba(0,0,0,.3),0 4px 20px rgba(0,0,0,.5);
+  --s-yes:#60C878;--s-yes-bg:#082810;
+  --s-maybe:#4A80FF;--s-maybe-bg:#0A1830;
+  --s-wait:#C060E8;--s-wait-bg:#200830;
+  --s-todo:#D8A820;--s-todo-bg:#201A00;
+  --s-no:#E06830;--s-no-bg:#280E00;
+  --s-past:#907060;--s-past-bg:#1E1208;
 }}
 
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
