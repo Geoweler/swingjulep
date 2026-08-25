@@ -136,7 +136,7 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 .spinner{width:28px;height:28px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* ── DETAIL ───────────────────────────────────────────────── */
-.detail{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:30}
+.detail{display:none;position:fixed;inset:0;top:0;background:var(--bg);overflow-y:auto;z-index:200}
 .detail.open{display:block}
 .detail-hdr{position:sticky;top:0;background:var(--nav);padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--yellow)}
 .back{background:rgba(255,255,255,.12);border:none;cursor:pointer;color:#fff;font-size:18px;padding:6px 10px;border-radius:0;font-family:inherit}
@@ -850,6 +850,12 @@ async function openDetail(fid) {
   document.getElementById('detail-del-btn').onclick = () => openDeleteModal(f.id);
   document.getElementById('detail-mon-statut-btn').onclick = () => openStatutModal(f.id);
   document.getElementById('detail-view').classList.add('open');
+  // Cacher la nav principale quand le détail est ouvert
+  document.querySelector('.nav').style.display = 'none';
+  const fb = document.getElementById('filter-bar');
+  if(fb) fb.style.display = 'none';
+  const ab = document.querySelector('.activity-bar');
+  if(ab) ab.style.display = 'none';
   window.scrollTo(0,0);
 }
 
@@ -938,6 +944,12 @@ async function saveStatutModal(fid) {
 function closeDetail() {
   document.getElementById('detail-view').classList.remove('open');
   currentFestId = null;
+  // Remonter la nav principale
+  document.querySelector('.nav').style.display = '';
+  const fb = document.getElementById('filter-bar');
+  if(fb) fb.style.display = document.querySelector('.nav-tab[data-tab="festivals"].active') ? 'flex' : 'none';
+  const ab = document.querySelector('.activity-bar');
+  if(ab) ab.style.display = '';
 }
 
 // ─── ADD TRAJET / HEBERGEMENT ─────────────────────────────
