@@ -173,6 +173,70 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 .participant-body.open{display:block}
 .pfest-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:0;margin-bottom:4px;background:var(--card);border:.5px solid var(--border)}
 .pfest-name{flex:1;font-size:12px;color:var(--text);font-weight:500}
+
+/* ── NAV ──────────────────────────────────────────────────── */
+.nav{background:var(--nav);position:sticky;top:0;z-index:20;border-bottom:3px solid var(--accent)}
+.nav-inner{display:flex;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none;padding:0 1rem}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-tab{padding:12px 20px;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-display);letter-spacing:.06em;text-transform:uppercase}
+.nav-tab:hover{color:rgba(255,255,255,.9)}
+.nav-tab.active{color:#FFFFFF;border-bottom-color:var(--yellow)}
+
+/* ── LOGO ──────────────────────────────────────────────────── */
+.logo{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#FFFFFF;letter-spacing:.04em;text-transform:uppercase}
+
+/* ── SCREENS ───────────────────────────────────────────────── */
+.screen{display:none;max-width:1200px;margin:0 auto;padding:1.5rem 1.25rem 5rem}
+.screen.active{display:block}
+
+/* ── FORMS ─────────────────────────────────────────────────── */
+.section-card{background:var(--card);border-radius:0;padding:1.5rem;margin-bottom:1rem;border:1px solid var(--border);box-shadow:var(--shadow);border-top:3px solid var(--blue)}
+.section-card h3{font-size:11px;font-weight:800;margin-bottom:1.25rem;color:var(--text);display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-display)}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--blue)}
+.form-row textarea{min-height:70px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mini-label{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-family:inherit;width:100%}
+.fest-item{background:var(--bg);border:1px solid var(--border);border-radius:0;padding:9px 12px;margin-bottom:8px}
+.fest-item-name{font-size:13px;font-weight:600;color:var(--text)}
+.fest-item-date{font-size:11px;color:var(--text3);margin-bottom:6px}
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn{padding:10px 20px;border-radius:0;font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font-display);border:none;width:100%;margin-top:8px;transition:opacity .12s,transform .12s;letter-spacing:.08em;text-transform:uppercase}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--blue);color:#FFFFFF}
+.btn-secondary{background:none;border:1.5px solid var(--border2);color:var(--text2);margin-top:6px}
+.btn-danger{background:none;border:1.5px solid rgba(180,40,40,.5);color:var(--red);margin-top:6px}
+.success{background:var(--s-yes-bg);color:var(--s-yes);border-radius:0;padding:10px 14px;font-size:13px;text-align:center;margin-top:8px;display:none}
+
+/* ── IMPORT BOX ────────────────────────────────────────────── */
+.import-box{background:rgba(27,79,216,.08);border:1.5px dashed rgba(27,79,216,.3);border-radius:0;padding:1rem;margin-bottom:1.25rem}
+.import-box-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.import-row{display:flex;gap:8px}
+.import-row input{flex:1;padding:8px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.import-btn{background:var(--nav);color:#fff;border:none;border-radius:0;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.06em}
+.import-status{font-size:12px;color:var(--text3);margin-top:6px;display:none}
+
+/* ── PROFILE CHIP ──────────────────────────────────────────── */
+.profile-chip{padding:6px 14px;border-radius:0;font-size:13px;font-weight:500;border:1.5px solid var(--border2);cursor:pointer;color:var(--text2);background:var(--bg);transition:all .15s;font-family:inherit}
+.profile-chip:hover,.profile-chip.active{background:var(--nav);color:#fff;border-color:var(--nav)}
+.style-checks{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.style-check{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;color:var(--text)}
+.style-check input{width:15px;height:15px;accent-color:var(--blue)}
+
+/* ── ADD TABS ──────────────────────────────────────────────── */
+.add-tab{padding:8px;border:none;border-radius:0;cursor:pointer;font-family:var(--font-display);font-size:13px;font-weight:500}
+
+/* ── MISC ──────────────────────────────────────────────────── */
+.msg-card{background:var(--card);border:1px solid var(--border);border-radius:0;padding:1rem;margin-bottom:10px}
+.msg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.msg-name{font-size:14px;font-weight:600;color:var(--text)}
+.msg-date{font-size:11px;color:var(--text3)}
+.msg-text{font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
 @media(max-width:480px){
   .grid{grid-template-columns:1fr}
   .form-grid{grid-template-columns:1fr}
