@@ -237,6 +237,8 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
 .msg-name{font-size:14px;font-weight:600;color:var(--text)}
 .msg-date{font-size:11px;color:var(--text3)}
 .msg-text{font-size:14px;color:var(--text2);line-height:1.6;white-space:pre-wrap}
+
+#map{width:100%;height:calc(100vh - 110px)}
 @media(max-width:480px){
  .grid{grid-template-columns:1fr}
  .form-grid{grid-template-columns:1fr}
@@ -835,60 +837,58 @@ async function openDetail(fid) {
 }
 
 function openStatutModal(fid) {
- const f = festivals.find(x=>x.id===fid);
- if(!f) return;
- const partOptions = participants.map(p => {
- const pp = participations.find(x=>x.participant_id===p.id&&x.festival_id===fid);
- const statut = pp?.statut||'Non';
- return `<option value="${p.id}" ${statut!=='Non'?'':''}>${p.nom} — ${statut}</option>`;
- }).join('');
- 
- document.getElementById('modal-content').innerHTML = `
- <h2>Mon statut pour ${f.nom}</h2>
- <div class="form-row" style="margin-top:1rem">
- <label>Qui es-tu ?</label>
- <select id="sm-participant" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
- <option value="">-- Choisis ton prénom --</option>
- ${partOptions}
- </select>
- </div>
- <div class="form-row">
- <label>Mon statut</label>
- <select id="sm-statut" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
- ${STATUT_SELECT}
- </select>
- </div>
- <div class="form-row">
- <label>Hébergement</label>
- <select id="sm-heb" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
- ${HEBERGEMENT_SELECT}
- </select>
- </div>
- <div class="form-row">
- <label>Transport</label>
- <select id="sm-tra" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
- ${TRANSPORT_SELECT}
- </select>
- </div>
- <div class="modal-btns">
- <button class="btn btn-secondary" onclick="closeModal()" style="margin:0">Annuler</button>
- <button class="btn btn-primary" onclick="saveStatutModal('${fid}')" style="margin:0">Enregistrer</button>
- </div>
- `;
+  const f = festivals.find(x=>x.id===fid);
+  if(!f) return;
+  const partOptions = participants.map(p => {
+    const pp = participations.find(x=>x.participant_id===p.id&&x.festival_id===fid);
+    const statut = pp?.statut||'Non';
+    return '<option value="'+p.id+'">'+p.nom+' — '+statut+'</option>';
+  }).join('');
 
- // Pré-remplir si déjà un statut
- document.getElementById('sm-participant').addEventListener('change', function() {
- const pid = this.value;
- if(!pid) return;
- const pp = participations.find(x=>x.participant_id===pid&&x.festival_id===fid);
- if(pp) {
- document.getElementById('sm-statut').value = pp.statut||'Non';
- document.getElementById('sm-heb').value = pp.hebergement||'?';
- document.getElementById('sm-tra').value = pp.transport||'?';
- }
- });
+  document.getElementById('modal-content').innerHTML =
+    '<h2>Mon statut pour '+f.nom+'</h2>' +
+    '<div class="form-row" style="margin-top:1rem">' +
+      '<label>Qui es-tu ?</label>' +
+      '<select id="sm-participant" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">' +
+        '<option value="">-- Choisis ton prénom --</option>' +
+        partOptions +
+      '</select>' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<label>Mon statut</label>' +
+      '<select id="sm-statut" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">' +
+        STATUT_SELECT +
+      '</select>' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<label>Hébergement</label>' +
+      '<select id="sm-heb" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">' +
+        HEBERGEMENT_SELECT +
+      '</select>' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<label>Transport</label>' +
+      '<select id="sm-tra" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">' +
+        TRANSPORT_SELECT +
+      '</select>' +
+    '</div>' +
+    '<div class="modal-btns">' +
+      '<button class="btn btn-secondary" onclick="closeModal()" style="margin:0">Annuler</button>' +
+      '<button class="btn btn-primary" onclick="saveStatutModal(\'' + fid + '\')" style="margin:0">Enregistrer</button>' +
+    '</div>';
 
- openModal();
+  document.getElementById('sm-participant').addEventListener('change', function() {
+    const pid = this.value;
+    if(!pid) return;
+    const pp = participations.find(x=>x.participant_id===pid&&x.festival_id===fid);
+    if(pp) {
+      document.getElementById('sm-statut').value = pp.statut||'Non';
+      document.getElementById('sm-heb').value = pp.hebergement||'?';
+      document.getElementById('sm-tra').value = pp.transport||'?';
+    }
+  });
+
+  openModal();
 }
 
 async function saveStatutModal(fid) {
