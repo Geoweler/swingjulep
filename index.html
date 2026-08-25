@@ -420,22 +420,30 @@ const sb = createClient(
 const ADMIN_PWD = 'odin';
 
 const SL = {
-  'J\'y vais':'J\'y vais ✓',
-  'Peut-être':'Peut-être',
-  'En attente':'En attente',
-  'À décider':'À décider',
+  'J\'y vais !':'J\'y vais !',
+  'Ça m\'intéresse':'Ça m\'intéresse',
+  'Inscription en cours':'Inscription en cours',
+  'Pas trop sûr…':'Pas trop sûr…',
   'Passé':'Passé',
   'Non':'Non'
 };
 const SC = {
-  'J\'y vais':'b-yes','Peut-être':'b-maybe','En attente':'b-wait',
-  'À décider':'b-todo','Passé':'b-past','Non':'b-no'
+  'J\'y vais !':'b-yes',
+  'Ça m\'intéresse':'b-maybe',
+  'Inscription en cours':'b-wait',
+  'Pas trop sûr…':'b-todo',
+  'Passé':'b-past',
+  'Non':'b-no'
 };
 const SD = {
-  'J\'y vais':'#2a5a2a','Peut-être':'#5a4a10','En attente':'#5a3010',
-  'À décider':'#3a3830','Passé':'#6a6050','Non':'#5a5050'
+  'J\'y vais !':'#1B7A3A',
+  'Ça m\'intéresse':'#1B4FD8',
+  'Inscription en cours':'#8A2AB8',
+  'Pas trop sûr…':'#8A6A00',
+  'Passé':'#6A6A6A',
+  'Non':'#9A9080'
 };
-const STATUTS = ['Non','J\'y vais','Peut-être','À décider','En attente'];
+const STATUTS = ['Non','Pas trop sûr…','Ça m\'intéresse','Inscription en cours','J\'y vais !'];
 const STATUT_SELECT = STATUTS.map(s=>`<option value="${s}">${SL[s]||s}</option>`).join('');
 const HEBERGEMENT_SELECT = `<option value="?">—</option><option value="J'en ai un">J'en ai un</option><option value="J'en cherche un">J'en cherche un</option><option value="Non">Non</option>`;
 const TRANSPORT_SELECT = `<option value="?">—</option><option value="J'en ai un">J'en ai un</option><option value="J'en cherche un">J'en cherche un</option><option value="Non">Non</option>`;
@@ -670,7 +678,7 @@ function renderFestivals() {
           ${isQueer&&!styles.includes('Queer')?'<span class="tag" style="border-color:var(--red);color:var(--red)">Queer</span>':''}
           ${isSwitch&&!styles.includes('Switch')?'<span class="tag" style="border-color:var(--red);color:var(--red)">Switch</span>':''}
         </div>
-        ${ps.length?`<div class="pstrip">${ps.map(p=>`<div class="pchip"><div class="pav-sm">${ini(p.nom)}</div>${p.nom}</div>`).join('')}</div>`:''}
+        ${ps.length?`<div class="pstrip">${ps.map(p=>{const pp=participations.find(x=>x.participant_id===p.id&&x.festival_id===f.id);const c=pp?{"J'y vais !":"#1B7A3A","Inscription en cours":"#8A2AB8","Ça m'intéresse":"#1B4FD8","Pas trop sûr…":"#C08000"}[pp.statut]||"#1A1A1A":"#1A1A1A";return `<div class="pchip"><div class="pav-sm" style="background:${c}">${ini(p.nom)}</div>${p.nom}</div>`;}).join("")}</div>`:""}
       </div>`;
     }).join('')}
   `).join('');
@@ -730,12 +738,22 @@ async function openDetail(fid) {
   const tj = trajets.filter(t=>t.festival_id===fid);
   const hb = hebergements.filter(h=>h.festival_id===fid);
 
-  const psHtml = psFull.length ? `<div class="plist">${psFull.map(p=>`
-    <div class="prow">
-      <div class="pav">${ini(p.nom)}</div>
+  const statutColors = {
+    'J\'y vais !':'#1B7A3A',
+    'Ça m\'intéresse':'#1B4FD8',
+    'Inscription en cours':'#8A2AB8',
+    'Pas trop sûr…':'#C08000',
+    'Passé':'#6A6A6A',
+    'Non':'#9A9080'
+  };
+  const psHtml = psFull.length ? `<div class="plist">${psFull.map(p=>{
+    const col = statutColors[p.statut]||'#1A1A1A';
+    return `<div class="prow">
+      <div class="pav" style="background:${col}">${ini(p.nom)}</div>
       <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--text)">${p.nom}</div>${p.ville?`<div style="font-size:11px;color:var(--text3)">📍 ${p.ville}</div>`:''}</div>
       <span class="badge ${SC[p.statut]||'b-todo'}" style="margin:0">${SL[p.statut]||p.statut}</span>
-    </div>`).join('')}</div>` : '<p class="empty">Aucun participant</p>';
+    </div>`;
+  }).join('')}</div>` : '<p class="empty">Aucun participant</p>';
 
   const tjHtml = tj.length ? tj.map(t=>`<div class="tcard"><div class="tc-top">
     <span style="font-size:18px">${MI[t.mode]||'🛣️'}</span>
@@ -762,6 +780,32 @@ async function openDetail(fid) {
     ${f.notes?`<div class="notes-box">${f.notes}</div>`:''}
     ${f.lien?`<a class="link-row" href="${f.lien}" target="_blank"><span>🌐 Site officiel</span><span style="opacity:.6">↗</span></a>`:''}
     <div class="sec-title">Participants (${psFull.length})</div>${psHtml}
+    <details>
+      <summary>+ Mon statut pour ce festival</summary>
+      <div class="detail-form">
+        <div class="form-row"><label>Qui es-tu ?</label>
+          <select id="dpart-pid">
+            <option value="">-- Choisis ton prénom --</option>
+            ${participants.map(p=>{
+              const pp=participations.find(x=>x.participant_id===p.id&&x.festival_id===fid);
+              return `<option value="${p.id}">${p.nom}${pp&&pp.statut!=='Non'?' — '+pp.statut:''}</option>`;
+            }).join('')}
+          </select>
+        </div>
+        <div class="form-row"><label>Statut</label>
+          <select id="dpart-statut">${STATUT_SELECT}</select>
+        </div>
+        <div class="form-grid">
+          <div class="form-row"><label>🛏️ Hébergement</label>
+            <select id="dpart-heb">${HEBERGEMENT_SELECT}</select>
+          </div>
+          <div class="form-row"><label>🚄 Transport</label>
+            <select id="dpart-tra">${TRANSPORT_SELECT}</select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveStatutDetail('${fid}')">Enregistrer</button>
+      </div>
+    </details>
     <div class="sec-title">Trajets (${tj.length})</div>
     ${tjHtml}
     <details>
@@ -897,6 +941,28 @@ function closeDetail() {
 }
 
 // ─── ADD TRAJET / HEBERGEMENT ─────────────────────────────
+async function saveStatutDetail(fid) {
+  const pid = document.getElementById('dpart-pid')?.value;
+  if(!pid){ alert('Choisis ton prénom !'); return; }
+  const statut = document.getElementById('dpart-statut').value;
+  const hebergement = document.getElementById('dpart-heb').value;
+  const transport = document.getElementById('dpart-tra').value;
+  const existing = participations.find(x=>x.participant_id===pid&&x.festival_id===fid);
+  const nom = participants.find(p=>p.id===pid)?.nom||'?';
+  const festNom = festivals.find(f=>f.id===fid)?.nom||'festival';
+  if(existing){
+    await sb.from('participations').update({statut,hebergement,transport}).eq('id',existing.id);
+    const idx=participations.findIndex(x=>x.id===existing.id);
+    if(idx>=0) participations[idx]={...participations[idx],statut,hebergement,transport};
+  } else {
+    const {data}=await sb.from('participations').insert({participant_id:pid,festival_id:fid,statut,hebergement,transport}).select().single();
+    if(data) participations.push(data);
+  }
+  if(statut!=='Non') await logActivity('participation', funMsg('participation')+' '+nom+' → '+festNom+' ('+statut+')');
+  await loadAll();
+  openDetail(fid);
+}
+
 async function addTrajet(fid) {
   const dep=document.getElementById('dtj-d').value.trim();
   const arr=document.getElementById('dtj-a').value.trim();
