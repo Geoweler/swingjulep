@@ -67,7 +67,7 @@ body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bot
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
 
 /* NAV */
-.topbar{background:var(--nav);padding:calc(1.5rem + env(safe-area-inset-top)) 2rem 1.25rem;position:relative;overflow:hidden}.topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#1B4FD8 33%,#F0B800 33% 66%,#D42B2B 66%);cursor:pointer;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px}
+.topbar{background:var(--nav);padding:calc(1rem + env(safe-area-inset-top)) 1.25rem .85rem;position:relative;overflow:hidden}.topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#1B4FD8 33%,#F0B800 33% 66%,#D42B2B 66%);cursor:pointer;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px}
 details summary::before{content:'＋';font-size:14px}
 details[open] summary::before{content:'－'}
 .detail-form{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-top:6px}
@@ -104,7 +104,7 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 .contact-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
 .contact-overlay.open{display:flex}
 
-.filter-chip{font-size:10px;font-weight:700;padding:4px 12px;border-radius:0;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-display);letter-spacing:.06em;text-transform:uppercase;transition:all .12s;flex-shrink:0}
+.filter-chip{font-size:10px;font-weight:700;padding:4px 10px;border-radius:0;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-display);letter-spacing:.04em;text-transform:uppercase;transition:all .12s;flex-shrink:0}
 .filter-chip:hover{border-color:var(--text);color:var(--text)}
 .filter-chip.active{background:var(--blue);color:#FFFFFF;border-color:var(--blue)}
 .filter-chip.queer-switch{border-color:var(--red);color:var(--red)}
@@ -130,7 +130,7 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 .b-todo{background:var(--s-todo-bg);color:var(--s-todo);border-color:var(--s-todo)}
 .b-no{background:var(--s-no-bg);color:var(--s-no);border-color:var(--s-no)}
 .b-past{background:var(--s-past-bg);color:var(--s-past);border-color:var(--s-past)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:.75rem}
 .month-header{font-size:13px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.15em;padding:4px 0 8px;border-bottom:2px solid var(--text);margin-bottom:1rem;grid-column:1/-1;margin-top:1rem;font-family:var(--font-display)}
 .loading{text-align:center;padding:4rem 1rem;color:var(--text3)}
 .spinner{width:28px;height:28px;border:2.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
@@ -176,17 +176,17 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 
 /* ── NAV ──────────────────────────────────────────────────── */
 .nav{background:var(--nav);position:sticky;top:0;z-index:20;border-bottom:3px solid var(--accent)}
-.nav-inner{display:flex;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none;padding:0 1rem}
+.nav-inner{display:flex;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none;padding:0 .5rem}
 .nav-inner::-webkit-scrollbar{display:none}
-.nav-tab{padding:12px 20px;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-display);letter-spacing:.06em;text-transform:uppercase}
+.nav-tab{padding:10px 14px;font-size:11px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap;flex-shrink:0;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-display);letter-spacing:.04em;text-transform:uppercase}
 .nav-tab:hover{color:rgba(255,255,255,.9)}
 .nav-tab.active{color:#FFFFFF;border-bottom-color:var(--yellow)}
 
 /* ── LOGO ──────────────────────────────────────────────────── */
-.logo{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#FFFFFF;letter-spacing:.04em;text-transform:uppercase}
+.logo{font-family:var(--font-display);font-size:clamp(1.2rem,5vw,2.4rem);font-weight:800;color:#FFFFFF;letter-spacing:.02em;text-transform:uppercase}
 
 /* ── SCREENS ───────────────────────────────────────────────── */
-.screen{display:none;max-width:1200px;margin:0 auto;padding:1.5rem 1.25rem 5rem}
+.screen{display:none;max-width:1200px;margin:0 auto;padding:1rem .75rem 5rem}
 .screen.active{display:block}
 
 /* ── FORMS ─────────────────────────────────────────────────── */
@@ -265,7 +265,7 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
 </nav>
 
 <!-- FILTRES -->
-<div id="filter-bar" style="background:var(--bg2);border-bottom:2px solid var(--border2);padding:8px 1.25rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center;overflow-x:auto;scrollbar-width:none">
+<div id="filter-bar" style="background:var(--bg2);border-bottom:2px solid var(--border2);padding:6px .75rem;display:flex;gap:5px;flex-wrap:wrap;align-items:center;overflow-x:auto;scrollbar-width:none">
   <span style="font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-display);flex-shrink:0;margin-right:4px">Filtrer</span>
   <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Tous</button>
   <button class="filter-chip queer-switch" data-filter="Queer" onclick="setFilter('Queer')">🌈 Queer</button>
@@ -326,10 +326,11 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
 <!-- DETAIL VIEW -->
 <div class="detail" id="detail-view">
   <div class="detail-hdr">
-    <button class="back" onclick="closeDetail()">←</button>
+    <button class="back" onclick="closeDetail()">← Retour</button>
     <span class="detail-title" id="detail-title"></span>
     <div style="display:flex;gap:6px">
-      <button class="hbtn" id="detail-edit-btn">✏️ Modifier</button>
+      <button class="hbtn" id="detail-mon-statut-btn" style="background:var(--yellow);color:#1A1A1A;font-weight:700">+ Mon statut</button>
+      <button class="hbtn" id="detail-edit-btn">✏️</button>
       <button class="hbtn del" id="detail-del-btn">🗑️</button>
     </div>
   </div>
@@ -803,8 +804,91 @@ async function openDetail(fid) {
 
   document.getElementById('detail-edit-btn').onclick = () => openEditModal(f.id);
   document.getElementById('detail-del-btn').onclick = () => openDeleteModal(f.id);
+  document.getElementById('detail-mon-statut-btn').onclick = () => openStatutModal(f.id);
   document.getElementById('detail-view').classList.add('open');
   window.scrollTo(0,0);
+}
+
+function openStatutModal(fid) {
+  const f = festivals.find(x=>x.id===fid);
+  if(!f) return;
+  const partOptions = participants.map(p => {
+    const pp = participations.find(x=>x.participant_id===p.id&&x.festival_id===fid);
+    const statut = pp?.statut||'Non';
+    return `<option value="${p.id}" ${statut!=='Non'?'':''}>${p.nom} — ${statut}</option>`;
+  }).join('');
+  
+  document.getElementById('modal-content').innerHTML = `
+    <h2>🎟️ Mon statut pour ${f.nom}</h2>
+    <div class="form-row" style="margin-top:1rem">
+      <label>Qui es-tu ?</label>
+      <select id="sm-participant" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        <option value="">-- Choisis ton prénom --</option>
+        ${partOptions}
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Mon statut</label>
+      <select id="sm-statut" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        ${STATUT_SELECT}
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Hébergement</label>
+      <select id="sm-heb" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        ${HEBERGEMENT_SELECT}
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Transport</label>
+      <select id="sm-tra" style="width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:0;background:var(--bg);color:var(--text);font-size:14px;font-family:inherit">
+        ${TRANSPORT_SELECT}
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal()" style="margin:0">Annuler</button>
+      <button class="btn btn-primary" onclick="saveStatutModal('${fid}')" style="margin:0">Enregistrer</button>
+    </div>
+  \`;
+
+  `;
+
+  // Pré-remplir si déjà un statut
+  document.getElementById('sm-participant').addEventListener('change', function() {
+    const pid = this.value;
+    if(!pid) return;
+    const pp = participations.find(x=>x.participant_id===pid&&x.festival_id===fid);
+    if(pp) {
+      document.getElementById('sm-statut').value = pp.statut||'Non';
+      document.getElementById('sm-heb').value = pp.hebergement||'?';
+      document.getElementById('sm-tra').value = pp.transport||'?';
+    }
+  });
+
+  openModal();
+}
+
+async function saveStatutModal(fid) {
+  const pid = document.getElementById('sm-participant').value;
+  if(!pid){ alert('Choisis ton prénom !'); return; }
+  const statut = document.getElementById('sm-statut').value;
+  const hebergement = document.getElementById('sm-heb').value;
+  const transport = document.getElementById('sm-tra').value;
+  const existing = participations.find(x=>x.participant_id===pid&&x.festival_id===fid);
+  const nom = participants.find(p=>p.id===pid)?.nom||'?';
+  const festNom = festivals.find(f=>f.id===fid)?.nom||'festival';
+  if(existing){
+    await sb.from('participations').update({statut,hebergement,transport}).eq('id',existing.id);
+    const idx = participations.findIndex(x=>x.id===existing.id);
+    if(idx>=0) participations[idx]={...participations[idx],statut,hebergement,transport};
+  } else {
+    const {data} = await sb.from('participations').insert({participant_id:pid,festival_id:fid,statut,hebergement,transport}).select().single();
+    if(data) participations.push(data);
+  }
+  if(statut!=='Non') await logActivity('participation', funMsg('participation')+' '+nom+' → '+festNom+' ('+statut+')');
+  closeModal();
+  openDetail(fid);
+  renderParticipants();
 }
 
 function closeDetail() {
