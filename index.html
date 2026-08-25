@@ -65,7 +65,7 @@ body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bot
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
 
 /* NAV */
-.topbar{background:var(--nav);padding:calc(1.5rem + env(safe-area-inset-top)) 2rem 1.25rem;position:relative;overflow:hidden}.topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent) 33%,var(--yellow) 33% 66%,var(--red) 66%)}
+.topbar{background:var(--nav);padding:calc(1.5rem + env(safe-area-inset-top)) 2rem 1.25rem;position:relative;overflow:hidden}.topbar::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#C4531A 33%,#D4940A 33% 66%,#2C1A0E 66%)}
 .logo{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#FFFFFF;letter-spacing:.04em;text-transform:uppercase}
 .nav{background:var(--nav);position:sticky;top:0;z-index:20;border-bottom:3px solid var(--accent)}
 .nav-inner{display:flex;max-width:1200px;margin:0 auto;overflow-x:auto;scrollbar-width:none;padding:0 1rem}
@@ -266,7 +266,7 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 </nav>
 
 <!-- FILTRES -->
-<div id="filter-bar" style="background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 1.25rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center;overflow-x:auto;scrollbar-width:none">
+<div id="filter-bar" style="background:var(--bg2);border-bottom:2px solid var(--border2);padding:8px 1.25rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center;overflow-x:auto;scrollbar-width:none">
   <span style="font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-display);flex-shrink:0;margin-right:4px">Filtrer</span>
   <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Tous</button>
   <button class="filter-chip queer-switch" data-filter="Queer" onclick="setFilter('Queer')">🌈 Queer</button>
