@@ -73,7 +73,7 @@ details[open] summary::before{content:''}
 .detail-form{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-top:6px}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:300}
 .modal-overlay.open{display:flex}
 .modal{background:var(--card);border-radius:var(--r) var(--r) 0 0;padding:1.5rem 1.25rem 2.5rem;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;border:1px solid var(--border)}
 .modal h2{font-size:16px;font-weight:700;margin-bottom:1rem;color:var(--text)}
@@ -81,7 +81,7 @@ details[open] summary::before{content:''}
 .modal-btns button{flex:1;margin:0}
 
 /* ADMIN */
-.admin-overlay{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:40}
+.admin-overlay{display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:400}
 .admin-overlay.open{display:block}
 .admin-inner{max-width:700px;margin:0 auto;padding:2rem 1.25rem 4rem}
 .admin-login{text-align:center;padding-top:4rem}
@@ -101,7 +101,7 @@ footer{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--border);
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* CONTACT */
-.contact-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.contact-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:300}
 .contact-overlay.open{display:flex}
 
 .filter-chip{font-size:10px;font-weight:700;padding:4px 10px;border-radius:0;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-display);letter-spacing:.04em;text-transform:uppercase;transition:all .12s;flex-shrink:0}
@@ -327,16 +327,18 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
 
 <!-- DETAIL VIEW -->
 <div class="detail" id="detail-view">
- <div class="detail-hdr">
- <button class="back" onclick="closeDetail()">← Retour</button>
- <span class="detail-title" id="detail-title"></span>
- <div style="display:flex;gap:6px">
- <button class="hbtn" id="detail-mon-statut-btn" style="background:var(--yellow);color:#1A1A1A;font-weight:700">+ Mon statut</button>
- <button class="hbtn" id="detail-edit-btn">Modifier</button>
- <button class="hbtn del" id="detail-del-btn">Suppr.</button>
- </div>
- </div>
- <div class="detail-body" id="detail-body"></div>
+  <div class="detail-hdr" style="flex-direction:column;align-items:stretch;gap:6px;padding:.75rem 1rem">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="back" onclick="closeDetail()">←</button>
+      <span class="detail-title" id="detail-title" style="flex:1;font-size:13px"></span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="hbtn" id="detail-mon-statut-btn" style="background:var(--yellow);color:#1A1A1A;font-weight:700;flex:1;text-align:center">+ Mon statut</button>
+      <button class="hbtn" id="detail-edit-btn" style="flex:1;text-align:center">Modifier</button>
+      <button class="hbtn del" id="detail-del-btn" style="flex:1;text-align:center">Supprimer</button>
+    </div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
 </div>
 
 <!-- MODAL -->
