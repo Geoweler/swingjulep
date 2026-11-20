@@ -66,8 +66,8 @@ body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bot
 
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;overflow-x:hidden;width:100%}
 
-/* ── THEMES PAR CATEGORIE (QUEER / BLUES / OTHERS) ───────────────
-   OTHERS = thème d'origine (suit le mode sombre du système).
+/* ── THEMES PAR CATEGORIE (QUEER / BLUES / TOUS) ───────────────
+   TOUS = thème d'origine (suit le mode sombre du système).
    QUEER et BLUES ont leur propre palette fixe, contrastes WCAG AA vérifiés. */
 :root{--bands-queer:linear-gradient(90deg,#D41980 0% 20%,#B61A8A 20% 40%,#981C93 40% 60%,#791E9C 60% 80%,#5B1FA6 80% 100%);--bands-blues:linear-gradient(90deg,#0B2A6B 0% 20%,#103378 20% 40%,#153C84 40% 60%,#1A4591 60% 80%,#1F4E9E 80% 100%);--on-blue:#FFFFFF;--band:linear-gradient(90deg,#1B4FD8 33%,#F0B800 33% 66%,#D42B2B 66%);--bg-grad:none}
 html{background:var(--bg)}
@@ -111,10 +111,6 @@ html[data-cat="blues"]{
 .activity-hist-item:last-child{border-bottom:none}
 
 
-/* ── VARIANTE "NUAGE DE PIXELS" (page ouverte avec ?fond=pixels) ── */
-html[data-fond="pixels"] .cat-tile-queer,html[data-fond="pixels"] .cat-btn[data-cat="queer"][aria-selected="true"]{background-image:var(--px-img,var(--bands-queer));background-size:100% 100%;image-rendering:pixelated}
-html[data-fond="pixels"] .cat-tile-blues,html[data-fond="pixels"] .cat-btn[data-cat="blues"][aria-selected="true"]{background-image:var(--px-img,var(--bands-blues));background-size:100% 100%;image-rendering:pixelated}
-
 /* ── NOM DU SITE CLIQUABLE (retour à l'accueil) ── */
 .logo{cursor:pointer;display:inline-block}
 .logo:focus-visible{outline:3px solid #F0B800;outline-offset:4px}
@@ -127,16 +123,17 @@ html[data-fond="pixels"] .cat-tile-blues,html[data-fond="pixels"] .cat-btn[data-
 .cat-btn[aria-selected="true"]{color:#FFFFFF;border-color:transparent;box-shadow:inset 0 -4px 0 #F0B800}
 .cat-btn[data-cat="queer"][aria-selected="true"]{background:var(--bands-queer);color:#FFFFFF}
 .cat-btn[data-cat="blues"][aria-selected="true"]{background:var(--bands-blues)}
-.cat-btn[data-cat="others"][aria-selected="true"]{background:#2B2B2B}
+.cat-btn[data-cat="tous"][aria-selected="true"]{background:var(--tous-bands,#2B2B2B);color:var(--tous-ink,#FFFFFF);box-shadow:inset 0 -4px 0 var(--tous-ink,#F0B800)}
+.cat-btn-label{display:block;line-height:1.1;overflow-wrap:anywhere}
 .cat-btn:focus-visible,.cat-tile:focus-visible{outline:3px solid #F0B800;outline-offset:2px}
 
 /* ── CHOIX A LA PREMIERE VISITE ── */
 .cat-chooser{position:fixed;inset:0;z-index:500;background:#12091F;display:flex;overflow-y:auto}
 .cat-chooser[hidden]{display:none}
 .cat-chooser-inner{width:100%;min-height:100%;display:flex;flex-direction:column;outline:none}
-.cat-banner{--sea:#26826B;--sea-2:#2E9A7F;--sea-line:#0E3B31;--sea-stroke:.8;position:relative;overflow:hidden;flex-shrink:0;background:linear-gradient(90deg,var(--sea),var(--sea-2));padding:calc(1rem + env(safe-area-inset-top)) 1.25rem 1rem}
+.cat-banner{--sea:#26826B;--sea-2:#2E9A7F;--sea-line:#0E3B31;--sea-stroke:.8;position:relative;overflow:hidden;flex-shrink:0;background:linear-gradient(90deg,var(--sea),var(--sea-2));padding:calc(.7rem + env(safe-area-inset-top)) 1.25rem .7rem}
 .cat-banner h1{margin:0;line-height:0}
-.cat-banner-word{display:block;width:100%;height:auto;overflow:visible}
+.cat-banner-word{display:block;width:min(100%,280px);height:auto;overflow:visible}
 .cat-banner-word text{font-family:'Space Grotesk',sans-serif;font-weight:800;stroke:var(--sea-line);stroke-width:var(--sea-stroke);paint-order:stroke fill;stroke-linejoin:round}
 .cat-tiles{flex:1;display:grid;grid-template-columns:1fr;grid-auto-rows:minmax(150px,1fr);gap:12px;padding:1.25rem calc(1.25rem + env(safe-area-inset-right)) calc(1.25rem + env(safe-area-inset-bottom)) calc(1.25rem + env(safe-area-inset-left))}
 /* texture : grain fin par-dessus tuiles et bandeau */
@@ -144,15 +141,14 @@ html[data-fond="pixels"] .cat-tile-blues,html[data-fond="pixels"] .cat-btn[data-
 .cat-tile{display:block;position:relative;overflow:hidden;min-height:150px;padding:.9rem;border:0;border-radius:0;cursor:pointer;text-align:left;transition:transform .15s}
 .cat-tile:hover{transform:translateY(-2px)}
 .cat-tile-count{position:absolute;top:.85rem;left:.9rem;font-family:'Inter',sans-serif;font-size:12px;font-weight:600}
-.cat-tile-word{position:absolute;left:.9rem;bottom:.6rem;width:calc(100% - 1.8rem);height:auto;display:block;overflow:visible}
+.cat-tile-word{position:absolute;left:.9rem;bottom:.6rem;width:calc(100% - 1.8rem);height:auto;max-height:calc(100% - 2.4rem);display:block;overflow:visible}
 .cat-tile-word text{font-family:'Space Grotesk',sans-serif;font-weight:800;letter-spacing:.02em}
 .cat-tile-queer{background:var(--bands-queer);color:#FFFFFF}
 .cat-tile-queer .cat-tile-word text{fill:#40E0D0}
 .cat-tile-blues{background:var(--bands-blues);color:#FFFFFF}
 .cat-tile-blues .cat-tile-word text{fill:#7FA8EE}
-.cat-tile-others{background:#1A1A1A;color:#FFFFFF}
-.cat-tile-others .cat-tile-word text{fill:#777777}
-.cat-tile-others::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(90deg,#1B4FD8 33%,#F0B800 33% 66%,#D42B2B 66%)}
+.cat-tile-tous{background:var(--tous-bands,#1A1A1A);color:var(--tous-ink,#FFFFFF)}
+.cat-tile-tous .cat-tile-word text{fill:var(--tous-word,#777777)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(min-width:720px){.cat-tiles{grid-template-columns:repeat(3,1fr)}.cat-tile{min-height:240px}}
 
@@ -360,18 +356,18 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
     <div class="cat-tiles">
       <button type="button" class="cat-tile cat-tile-queer" onclick="setCategory('queer')">
         <span class="cat-tile-count" data-count="queer"></span>
-        <svg class="cat-tile-word" viewBox="0 0 100 32" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">QUEER</text></svg>
+        <svg class="cat-tile-word" viewBox="0 0 100 32" preserveAspectRatio="xMinYMax meet" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">QUEER</text></svg>
         <span class="sr-only">Queer</span>
       </button>
       <button type="button" class="cat-tile cat-tile-blues" onclick="setCategory('blues')">
         <span class="cat-tile-count" data-count="blues"></span>
-        <svg class="cat-tile-word" viewBox="0 0 100 32" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">BLUES</text></svg>
+        <svg class="cat-tile-word" viewBox="0 0 100 32" preserveAspectRatio="xMinYMax meet" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">BLUES</text></svg>
         <span class="sr-only">Blues</span>
       </button>
-      <button type="button" class="cat-tile cat-tile-others" onclick="setCategory('others')">
-        <span class="cat-tile-count" data-count="others"></span>
-        <svg class="cat-tile-word" viewBox="0 0 100 32" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">OTHERS</text></svg>
-        <span class="sr-only">Others</span>
+      <button type="button" class="cat-tile cat-tile-tous" onclick="setCategory('tous')">
+        <span class="cat-tile-count" data-count="tous"></span>
+        <svg class="cat-tile-word" viewBox="0 0 100 32" preserveAspectRatio="xMinYMax meet" aria-hidden="true" focusable="false"><text x="0" y="27" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="33">MIXED</text></svg>
+        <span class="sr-only">Mixed</span>
       </button>
     </div>
   </div>
@@ -409,7 +405,7 @@ select.mini{font-size:12px;padding:4px 6px;border:1px solid var(--border2);borde
   <div class="cat-switch" role="tablist" aria-label="Catégories de festivals">
     <button type="button" class="cat-btn" role="tab" data-cat="queer" aria-selected="false" onclick="setCategory('queer')">Queer<small data-count="queer"></small></button>
     <button type="button" class="cat-btn" role="tab" data-cat="blues" aria-selected="false" onclick="setCategory('blues')">Blues<small data-count="blues"></small></button>
-    <button type="button" class="cat-btn" role="tab" data-cat="others" aria-selected="true" onclick="setCategory('others')">Others<small data-count="others"></small></button>
+    <button type="button" class="cat-btn" role="tab" data-cat="tous" aria-selected="true" onclick="setCategory('tous')"><span class="cat-btn-label">Mixed</span><small data-count="tous"></small></button>
   </div>
  <div class="grid" id="festivals-grid">
  <div class="loading"><div class="spinner"></div>Chargement...</div>
@@ -600,19 +596,19 @@ function setFilter(f) {
  renderFestivals();
 }
 
-// CATEGORIES (QUEER / BLUES / OTHERS)
+// CATEGORIES (QUEER / BLUES / TOUS)
 // Règle : QUEER = tag "Queer" ou "Switch", ou "queer"/"switch" dans le nom ; BLUES = tag "Blues" ;
-// OTHERS = ni l'un ni l'autre. Un festival à la fois Queer et Blues apparaît dans les deux.
-const CATS = ['queer','blues','others'];
-const CAT_THEME_COLOR = {queer:'#6B34B3', blues:'#061330', others:'#1A1A1A'};
-let activeCat = 'others';
+// TOUS = tous les festivals ensemble. Un festival à la fois Queer et Blues apparaît dans QUEER et dans BLUES.
+const CATS = ['queer','blues','tous'];
+const CAT_THEME_COLOR = {queer:'#6B34B3', blues:'#061330', tous:'#1A1A1A'};
+let activeCat = 'tous';
+let catChosen = false;
 
 function festCats(f) {
   const styles = f.styles || [];
   const cats = [];
   if (styles.includes('Queer') || styles.includes('Switch') || /queer|switch/i.test(f.nom || '')) cats.push('queer');
   if (styles.includes('Blues')) cats.push('blues');
-  if (!cats.length) cats.push('others');
   return cats;
 }
 
@@ -625,15 +621,16 @@ function updateCatCounts() {
   const today = new Date(); today.setHours(0,0,0,0);
   const upcoming = f => { const d = f.date_fin || f.date_debut; return !d || new Date(d + 'T23:59:59') >= today; };
   CATS.forEach(c => {
-    const n = festivals.filter(f => upcoming(f) && festCats(f).includes(c)).length;
+    const n = festivals.filter(f => upcoming(f) && (c === 'tous' || festCats(f).includes(c))).length;
     const label = n === 0 ? 'aucun à venir' : (n === 1 ? '1 à venir' : n + ' à venir');
     document.querySelectorAll('[data-count="' + c + '"]').forEach(el => { el.textContent = label; });
   });
 }
 
 function setCategory(cat, persist) {
-  if (!CATS.includes(cat)) cat = 'others';
+  if (!CATS.includes(cat)) cat = 'tous';
   activeCat = cat;
+  catChosen = true;
   document.documentElement.setAttribute('data-cat', cat);
   const tc = document.querySelector('meta[name="theme-color"]');
   if (tc) tc.setAttribute('content', CAT_THEME_COLOR[cat]);
@@ -646,7 +643,7 @@ function setCategory(cat, persist) {
   if (festivals.length) renderFestivals();
 }
 
-// RETOUR A L'ACCUEIL (clic sur le nom du site)
+// RETOUR A L'ACCUEIL (clic sur le nom du site) : rouvre l'écran des trois tuiles
 function goHome() {
   try { closeModal(); } catch (e) {}
   try { closeContact(); } catch (e) {}
@@ -655,36 +652,59 @@ function goHome() {
   if (d && d.classList.contains('open')) closeDetail();
   const tab = document.querySelector('.nav-tab[data-tab="festivals"]');
   if (tab) tab.click();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0 });
+  const ch = document.getElementById('cat-chooser');
+  if (ch) { ch.hidden = false; const box = ch.querySelector('.cat-chooser-inner'); if (box) box.focus(); }
 }
 
-// TEXTURE "NUAGE DE PIXELS" (page ouverte avec ?fond=pixels ; par défaut : bandes franches)
-function hexToRgb(hex) { hex = hex.replace('#', ''); return [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16)); }
-function pixelGradientURL(c1, c2, w, h, px, seed) {
-  const cols = Math.max(4, Math.ceil(w / px)), rows = Math.max(2, Math.ceil(h / px));
-  const cv = document.createElement('canvas'); cv.width = cols; cv.height = rows;
-  const ctx = cv.getContext('2d'); const img = ctx.createImageData(cols, rows);
-  const A = hexToRgb(c1), B = hexToRgb(c2);
-  let s = seed >>> 0;
-  const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
-  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-    const t = cols > 1 ? x / (cols - 1) : 0;
-    const p = Math.min(1, Math.max(0, (t - 0.08) / 0.84));
-    const c = rnd() < p ? B : A; const i = (y * cols + x) * 4;
-    img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255;
-  }
-  ctx.putImageData(img, 0, 0);
-  return cv.toDataURL('image/png');
+// COCKTAILS : le 3e bloc change de nom et de couleurs à chaque ouverture de la page
+const COCKTAILS = [
+  { nom: 'NEGRONI', a: '#8E0F1E', b: '#C93A25', mot: '#FFC04D', texte: '#FFFFFF' },
+  { nom: 'MOSCOW MULE', a: '#8A4B21', b: '#B06A30', mot: '#D6F25C', texte: '#FFFFFF' },
+  { nom: 'MOJITO', a: '#14532D', b: '#2F9E5B', mot: '#E8FFD8', texte: '#FFFFFF' },
+  { nom: 'SPRITZ', a: '#C93F07', b: '#E8590C', mot: '#FFF4E0', texte: '#FFFFFF' },
+  { nom: 'COSMO', a: '#A3124F', b: '#E64980', mot: '#FFF3F8', texte: '#FFFFFF' },
+  { nom: 'MARGARITA', a: '#8FD14F', b: '#D4EE8A', mot: '#1F5C14', texte: '#1B3A12' },
+  { nom: 'BLUE LAGOON', a: '#064B8A', b: '#1E88C8', mot: '#FFFFFF', texte: '#FFFFFF' },
+  { nom: 'DAIQUIRI', a: '#C2183F', b: '#E04865', mot: '#FFF4E6', texte: '#FFFFFF' },
+  { nom: 'BELLINI', a: '#FFB48A', b: '#FFD2B3', mot: '#9B1B44', texte: '#4A0F25' },
+  { nom: 'TEQUILA SUNRISE', a: '#FFC83D', b: '#C73A2A', mot: '#1B0E2E', texte: '#1B0E2E' },
+  { nom: 'PIÑA COLADA', a: '#F6E7A6', b: '#FFF6CC', mot: '#7A4A12', texte: '#3D2508' },
+  { nom: 'MIMOSA', a: '#FFC933', b: '#FFE27A', mot: '#C2410C', texte: '#5A2300' },
+  { nom: 'JULEP', a: '#A8E0C2', b: '#D9F2E3', mot: '#1E5C3F', texte: '#12402A' }
+];
+function mixHex(a, b, t) {
+  const p = x => [1, 3, 5].map(i => parseInt(x.substr(i, 2), 16));
+  const A = p(a), B = p(b);
+  return '#' + A.map((v, i) => Math.round(v * (1 - t) + B[i] * t).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
-function paintPixels() {
-  if (document.documentElement.getAttribute('data-fond') !== 'pixels') return;
-  const defs = [['.cat-tile-queer', '#D41980', '#5B1FA6', 6, 11], ['.cat-tile-blues', '#0B2A6B', '#1F4E9E', 6, 22],
-                ['.cat-btn[data-cat="queer"]', '#D41980', '#5B1FA6', 3, 33], ['.cat-btn[data-cat="blues"]', '#0B2A6B', '#1F4E9E', 3, 44]];
-  defs.forEach(d => {
-    const el = document.querySelector(d[0]); if (!el) return;
-    const r = el.getBoundingClientRect(); if (r.width < 10 || r.height < 10) return;
-    el.style.setProperty('--px-img', 'url(' + pixelGradientURL(d[1], d[2], r.width, r.height, d[3], d[4]) + ')');
-  });
+function cocktailBands(a, b) {
+  const cols = [0, 1, 2, 3, 4].map(i => mixHex(a, b, i / 4));
+  return 'linear-gradient(90deg,' + cols.map((c, i) => c + ' ' + (i * 20) + '% ' + ((i + 1) * 20) + '%').join(',') + ')';
+}
+function pickCocktail() {
+  let last = -1;
+  try { last = parseInt(localStorage.getItem('swingjulep_cocktail'), 10); } catch (e) {}
+  let i;
+  do { i = Math.floor(Math.random() * COCKTAILS.length); } while (COCKTAILS.length > 1 && i === last);
+  try { localStorage.setItem('swingjulep_cocktail', String(i)); } catch (e) {}
+  return COCKTAILS[i];
+}
+function applyCocktail(c) {
+  const st = document.documentElement.style;
+  st.setProperty('--tous-bands', cocktailBands(c.a, c.b));
+  st.setProperty('--tous-word', c.mot);
+  st.setProperty('--tous-ink', c.texte);
+  // un nom de deux mots s'écrit sur deux lignes
+  const lignes = c.nom.indexOf(' ') !== -1 ? c.nom.split(' ') : [c.nom];
+  const svg = document.querySelector('.cat-tile-tous .cat-tile-word');
+  if (svg) {
+    svg.setAttribute('viewBox', '0 0 100 ' + (32 * lignes.length));
+    svg.innerHTML = lignes.map((w, i) => '<text x="0" y="' + (27 + 32 * i) + '" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="' + Math.min(33, 196 / w.length).toFixed(1) + '">' + w + '</text>').join('');
+  }
+  const joli = c.nom.charAt(0) + c.nom.slice(1).toLowerCase();
+  const sr = document.querySelector('.cat-tile-tous .sr-only'); if (sr) sr.textContent = joli;
+  const lab = document.querySelector('.cat-btn-label'); if (lab) lab.textContent = c.nom;
 }
 
 // LOAD DATA 
@@ -858,7 +878,7 @@ function renderFestivals() {
  const grid = document.getElementById('festivals-grid');
  if(!festivals.length){ grid.innerHTML='<p style="color:var(--text3);padding:2rem">Aucun festival pour l\'instant.</p>'; return; }
  updateCatCounts();
-  const inCat = festivals.filter(f => festCats(f).includes(activeCat));
+  const inCat = activeCat === 'tous' ? festivals : festivals.filter(f => festCats(f).includes(activeCat));
   const filtered = activeFilter === 'all' ? inCat : inCat.filter(f => (f.styles||[]).includes(activeFilter));
   if (!filtered.length) { grid.innerHTML = '<p style="color:var(--text2);padding:2rem 0;grid-column:1/-1">Aucun festival dans cette catégorie pour l\'instant.</p>'; return; }
  const grouped = byMonth(filtered);
@@ -2311,27 +2331,20 @@ sb.channel('swingjulep')
 
 // INIT 
 (function initCategory() {
-  let params = null;
-  try { params = new URLSearchParams(location.search); } catch (e) {}
-  const fond = (params && params.get('fond') === 'pixels') ? 'pixels' : 'bandes';
-  document.documentElement.setAttribute('data-fond', fond);
-  const forceChooser = !!(params && params.has('choix'));
+  applyCocktail(pickCocktail());
   let saved = null;
   try { saved = localStorage.getItem('swingjulep_cat'); } catch (e) {}
+  if (saved === 'others') saved = 'tous'; // ancien nom de la catégorie
   const ch = document.getElementById('cat-chooser');
   if (saved && CATS.includes(saved)) {
     setCategory(saved, false);
-    if (forceChooser && ch) ch.hidden = false;
   } else {
-    document.documentElement.setAttribute('data-cat', 'others');
+    document.documentElement.setAttribute('data-cat', 'tous');
     syncCatButtons();
-    if (ch) ch.hidden = false;
+    if (ch) { ch.hidden = false; const box = ch.querySelector('.cat-chooser-inner'); if (box) box.focus(); }
   }
-  if (ch && !ch.hidden) { const box = ch.querySelector('.cat-chooser-inner'); if (box) box.focus(); }
-  if (fond === 'pixels') {
-    requestAnimationFrame(paintPixels);
-    window.addEventListener('resize', () => { clearTimeout(window.__pxTimer); window.__pxTimer = setTimeout(paintPixels, 150); });
-  }
+  // Echap referme l'écran d'accueil quand il a été rouvert (une catégorie est déjà choisie)
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && ch && !ch.hidden && catChosen) ch.hidden = true; });
 })();
 loadAll();
 </script>
